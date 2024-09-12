@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <BaseOutputPath>C:\Users\HungryMuttis\Desktop\Project\Programing\Visual Studio\Visual Studio projects\CSharp\Modder\Modder\bin</BaseOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\IDesign\IDesign.csproj" />
+    <ProjectReference Include="..\Mod\Mod.csproj" />
+    <ProjectReference Include="..\splashscreen\splashscreen.csproj" />
+  </ItemGroup>
+
+</Project>
