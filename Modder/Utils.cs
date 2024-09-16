@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Text;
 
 namespace Modder
 {
@@ -20,30 +21,64 @@ namespace Modder
         {
             MessageBox.Show(message, caption, MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
-        /// <summary>
-        /// **NOT PERFECT** (fails to correctly format variables surrounded by more than two {})
-        /// <br></br>
-        /// Modifies the string like string.Format(), but with correct variable selection system
-        /// </summary>
-        /// <param name="input">
-        /// string that is going to be modified
-        /// </param>
-        /// <param name="replacements">
-        /// array containing all of the replacements
-        /// </param>
-        /// <returns></returns>
-        public static string Replace(string input, Dictionary<string, string> replacements)
-        {
-            string placeholder = Guid.NewGuid().ToString();
-            input = input.Replace("{{", "{" + placeholder).Replace("}}", placeholder + "}");
-            foreach (KeyValuePair<string, string> kvp in replacements)
-                input = input.Replace("{" + kvp.Key + "}", kvp.Value);
-            return input.Replace("{" + placeholder, "{").Replace(placeholder + "}", "}");
-        }
-        /*public static string Interpolate(string str, Dictionary<string, string> replacements)
-        {
 
-        }*/
+        /// <summary>
+        /// Interpolates the given value with the given replacements
+        /// </summary>
+        /// <param name="value">string that will be interpolated</param>
+        /// <param name="replacements">all the different possible replacements</param>
+        /// <returns></returns>
+        public static string Interpolate(string value, Dictionary<string, string> replacements)
+        {
+            StringBuilder newValue = new();
+            StringBuilder toInterp = new();
+
+            bool interp = false;
+            bool cl = false;
+            foreach (char c in value)
+            {
+                if (c == '{')
+                {
+                    if (!interp)
+                        interp = true;
+                    else
+                    {
+                        interp = false;
+                        newValue.Append('{');
+                    }
+                }
+                else if (c == '}')
+                {
+                    if (interp)
+                    {
+                        interp = false;
+                        string word = toInterp.ToString();
+                        foreach (KeyValuePair<string, string> kvp in replacements.AsEnumerable())
+                            if (word == kvp.Key)
+                            {
+                                word = kvp.Value;
+                                break;
+                            }
+
+                        newValue.Append(word);
+                        toInterp.Clear();
+                    }
+                    else if (cl)
+                        cl = false;
+                    else
+                    {
+                        cl = true;
+                        newValue.Append('}');
+                    }
+                }
+                else if (interp)
+                    toInterp.Append(c);
+                else
+                    newValue.Append(c);
+            }
+
+            return newValue.ToString();
+        }
         public static (bool, Mod?) LoadMod(string mod)
         {
             Assembly loadedAssembly = Assembly.LoadFile(mod);

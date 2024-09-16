@@ -7,6 +7,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <BaseOutputPath>C:\Users\HungryMuttis\Desktop\Project\Programing\Visual Studio\Visual Studio projects\CSharp\Modder\Modder\bin</BaseOutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
