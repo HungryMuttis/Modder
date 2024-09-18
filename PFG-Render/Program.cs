@@ -1,4 +1,4 @@
-﻿using OpenTK;
+﻿using Modder;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
@@ -7,24 +7,14 @@ namespace Main
 {
     public class Main : IGameMod
     {
-        public Int16 Type { get { return 4; } } // This is a mod that adds content to the game
+        public ushort Type { get { return 4; } } // This is a mod that adds content to the game
         public string RealName { get { return "TestMod"; } } // The real name of the mod
-        public string Name { get { return "TestMod"; } } // The name of the mod
+        public string Name { get { return "Test mod"; } } // The name of the mod
         public string Description { get { return "This is a test mod."; } } // The description of the mod
         public string Version { get { return "1.0.0"; } } // The version of the mod
         public string Patch { get { return ""; } } // No patch for this version
         public (string, (string, string[]?)[])[] Required { get { return []; } } // No required mods or libraries
         public (string, (string, string[]?)[])[] Prohibited { get { return []; } } // No prohibited mods or libraries
-
-        public string DoSomething()
-        {
-            ///*
-            Thread thread = new(PFG_Render.TestMod.Main);
-            thread.Start();
-            //*/
-            //Main();
-            return "Done";
-        }
     }
 }
 

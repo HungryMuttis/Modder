@@ -15,13 +15,13 @@
     {
         ushort Type { get; } // A variable to know what type of .dll is this
         /*
-         * 0. Core         + only 1 can be mounted at a time (should not include any contend, only the rendering)
-         * 1. Core content + a mod that adds the core features of a game (can be multiple mounted at once)
-         * 2. Library      - a library that others mods use
-         * 3. Core mod     - a mod that expands the core 
-         * 4. Mod          - a mod that adds content to the game
+         0. Core render     + only 1 can be mounted at a time (should not include any contend, only the rendering)
+         1. Core content    + a mod that adds the core features of a game (can be multiple mounted at once)
+         2. Library         - a library that others mods use
+         3. Core render mod - a mod that expands the rendering
+         4. Mod             - a mod that adds content to the game
          */
-        string RealName { get; } // The real name of the mod (can be anything. The real difference between [Name] is that this will be the name program refers to this mod)
+        string RealName { get; } // The real name of the mod (can be anything. The real difference between [Name] is that this will be the name program refers to this mod between other mods)
         string Name { get; } // The name of the mod
         string Description { get; } // The description of the mod or a library
         string Version { get; } // The version of the mod

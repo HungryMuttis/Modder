@@ -5,8 +5,8 @@ namespace default_black
     public partial class frmMain : Form
     {
         List<object> Mods { get; set; }
-        List<object> Settings { get; set; }
-        public frmMain(List<object> mods, List<object> settings)
+        Dictionary<string, string> Settings { get; set; }
+        public frmMain(List<object> mods, Dictionary<string, string> settings)
         {
             InitializeComponent();
             Mods = mods;
@@ -39,27 +39,6 @@ namespace default_black
         private void radLogs_CheckedChanged(object sender, EventArgs e)
         {
             grbLogs.Visible = radLogs.Checked;
-        }
-    }
-}
-
-namespace Modder
-{
-    public class Main : IDesign
-    {
-        default_black.frmMain? mainForm;
-        public void Start(List<object> mods, List<object> settings)
-        {
-            this.mainForm = new default_black.frmMain(mods, settings);
-            //ApplicationConfiguration.Initialize();
-            Application.Run(this.mainForm);
-        }
-
-        public RichTextBox GetLogOutput()
-        {
-            if (mainForm == null)
-                throw new Exception("Form not started");
-            return mainForm.GetLogOutput();
         }
     }
 }

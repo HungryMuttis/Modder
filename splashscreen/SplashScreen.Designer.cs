@@ -28,31 +28,30 @@
         /// </summary>
         private void InitializeComponent()
         {
-            label1 = new Label();
-            label2 = new Label();
+            lblName = new Label();
+            lbl = new Label();
             SuspendLayout();
             // 
-            // label1
+            // lblName
             // 
-            label1.AutoSize = true;
-            label1.Font = new Font("Impact", 48F);
-            label1.Location = new Point(-12, -10);
-            label1.Name = "label1";
-            label1.Size = new Size(246, 80);
-            label1.TabIndex = 7;
-            label1.Text = "MODDER";
-            label1.UseWaitCursor = true;
+            lblName.AutoSize = true;
+            lblName.Font = new Font("Impact", 48F);
+            lblName.Location = new Point(-12, -10);
+            lblName.Name = "lblName";
+            lblName.Size = new Size(0, 80);
+            lblName.TabIndex = 7;
+            lblName.UseWaitCursor = true;
             // 
-            // label2
+            // lbl
             // 
-            label2.AutoSize = true;
-            label2.Font = new Font("Impact", 24F);
-            label2.Location = new Point(37, 59);
-            label2.Name = "label2";
-            label2.Size = new Size(138, 39);
-            label2.TabIndex = 8;
-            label2.Text = "Loading...";
-            label2.UseWaitCursor = true;
+            lbl.FlatStyle = FlatStyle.Flat;
+            lbl.Font = new Font("Impact", 24F);
+            lbl.Location = new Point(-2, 60);
+            lbl.Name = "lbl";
+            lbl.Size = new Size(219, 39);
+            lbl.TabIndex = 8;
+            lbl.TextAlign = ContentAlignment.MiddleCenter;
+            lbl.UseWaitCursor = true;
             // 
             // SplashScreen
             // 
@@ -60,8 +59,8 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.Window;
             ClientSize = new Size(215, 96);
-            Controls.Add(label2);
-            Controls.Add(label1);
+            Controls.Add(lbl);
+            Controls.Add(lblName);
             FormBorderStyle = FormBorderStyle.None;
             Name = "SplashScreen";
             Opacity = 0.5D;
@@ -73,7 +72,7 @@
         }
 
         #endregion
-        private Label label1;
-        private Label label2;
+        private Label lblName;
+        private Label lbl;
     }
 }

@@ -1,3 +1,33 @@
+using Modder;
+using default_black;
+
+namespace Main
+{
+    public class Main : IDesign
+    {
+        public event EventHandler<string>? AddLog;
+        public event EventHandler<string>? NewLog;
+        public event EventHandler<List<string>>? StartProgram;
+
+        public void Start(List<object> mods, Dictionary<string, string> settings)
+        {
+            frmMain mainForm = new(mods, settings);
+            //ApplicationConfiguration.Initialize();
+            Application.Run(mainForm);
+        }
+    }
+}
+
+namespace _
+{
+    public class _
+    {
+        [STAThread]
+        public static void Main() { }
+    }
+}
+
+/*
 namespace default_black
 {
     internal static class Program
@@ -15,3 +45,4 @@ namespace default_black
         }
     }
 }
+*/

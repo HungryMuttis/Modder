@@ -1,5 +1,7 @@
 using System.Data;
+using System.Diagnostics.Eventing.Reader;
 using System.Runtime.InteropServices;
+using System.Windows.Forms.VisualStyles;
 using System.Xml;
 using System.Xml.Xsl;
 using Newtonsoft.Json;
@@ -17,7 +19,9 @@ namespace Modder
         [STAThread]
         static void Main()
         {
+            ApplicationConfiguration.Initialize();
             Main main = new(GetConsoleWindow());
+            main.Start();
         }
     }
     public partial class Main : Form
@@ -33,35 +37,20 @@ namespace Modder
         public string PATH { get; }
         public string HERE { get; }
         public Dictionary<string, string> Settings { get; set; }
+
+        private Dictionary<int, List<object?>> HoldList { get; set; } = [];
+        private SplashScreen? SplashScreen { get; set; }
         public Main(IntPtr ptr)
         {
-            //INIT started
             Print("INIT started");
-
             Ptr = ptr;
 
-            //Starting the splach screen
             Print("Showing splash screen");
-            SplashScreen? splashScreen = null;
-            new Thread(() =>
-            {
-                splashScreen = new();
-                Application.Run(splashScreen);
-            }).Start();
-
-            //Setting up
-            Print("Setting up ENV variables");
-            string? path = Environment.GetEnvironmentVariable("MODDER_PATH", EnvironmentVariableTarget.User);
-
-            if (path == null)
-            {
-                path = @"C:\ProgramData\Modder\";
-                Environment.SetEnvironmentVariable("MODDER_PATH", path, EnvironmentVariableTarget.User);
-            }
+            this.SplashScreenShow("Loading...");
 
             //Setting PATH and HERE values
             Print("Setting up DEFAULT variables");
-            this.PATH = path;
+            this.PATH = Utils.SetupPATH();
             if (!Directory.Exists(this.PATH))
                 Directory.CreateDirectory(this.PATH);
             this.HERE = AppDomain.CurrentDomain.BaseDirectory;
@@ -83,14 +72,12 @@ namespace Modder
     </PATH>
     <Params>
         <Design>{PATH:Designs}default-black.dll</Design>
+        <ModWarn>true</ModWarn>
     </Params>
 </xml>
 """;
 
-            //Check if main.xml file exists
-            Print("Checking main.xml file");
-            if (!File.Exists(this.PATH + "main.xml"))
-                File.WriteAllText(this.PATH + "main.xml", Xml);
+            this.CheckXmlFile(Xml);
 
             //Config loading
             Print("Loading configs");
@@ -144,7 +131,7 @@ namespace Modder
                     throw new XmlException("Unexpected error occoured at checking 'doc'");
                 }
 
-                if (!CheckXml(defDoc.DocumentElement, doc.DocumentElement))
+                if (!Utils.CheckXml(defDoc.DocumentElement, doc.DocumentElement))
                 {
                     Print("User settings do not match the template");
                     Print("Using default settings");
@@ -174,79 +161,151 @@ namespace Modder
 
             Print("Interpolated settings:");
             foreach (KeyValuePair<string, string> kvp in this.Settings.AsEnumerable())
+            {
                 Print($" {kvp.Key} {kvp.Value}");
 
-            // Closing the splash screen
-            while (true)
-            {
-                try
+                if (kvp.Key.StartsWith("PATH:") &&
+                    !Directory.Exists(kvp.Value))
                 {
-                    if (splashScreen != null)
-                    {
-                        splashScreen.Invoke(new Action(splashScreen.Close));
-                        break;
-                    }
+                    Directory.CreateDirectory(kvp.Value);
+                    Print($" Created directory {kvp.Value}", 1);
                 }
-                catch { }
+            }
+
+            Print(1, "\n");
+
+            SplashScreenHide(true, true);
+        }
+
+        public void Start()
+        {
+            //Before startting the design, we need to get all the mods
+            this.StartDesign();
+        }
+
+        private void StartDesign()
+        {
+            Design? design = null;
+
+            if (File.Exists(this.Settings["Params:Design"]))
+                design = Utils.LoadDesign(this.Settings["Params:Design"]);
+            else
+            {
+                foreach (string path in Directory.GetFiles(this.Settings["DEFAULT:HERE"]))
+                {
+                    if (!path.EndsWith(".dll"))
+                        continue;
+
+                    Print($"Checking if {path} is a design");
+
+                    design = Utils.LoadDesign(path);
+
+                    if (design != null)
+                        break;
+                }
+            }
+
+            if (design == null)
+            {
+                Print("No design was found");
+                Utils.Error("No viable design DLL was found\nGet the DLL and add it to the PATH:DESIGNS directory, or to the EXE directory", "No design found");
+                throw new DesignException("No design was found");
+            }
+
+            ShowWindow(this.Ptr, 0);
+            try
+            {
+                design.Start([""], this.Settings);
+            }
+            catch (Exception e)
+            {
+                ShowWindow(this.Ptr, 4);
+                Print($"Design error: {e}");
+                Utils.Error("Fatal design error");
+                throw;
             }
         }
 
-        public static void Print(object? txt, string? end = "\n")
+        public void LoadMods(string dir)
         {
-            Console.Write(txt);
-            Console.Write(end);
-        }
+            SplashScreenShow("Loading mods...");
 
-        static bool CheckXml(XmlNode defDoc, XmlNode doc)
-        {
-            foreach (XmlNode defNode in defDoc.ChildNodes)
-            {
-                bool ex = false;
-                foreach (XmlNode node in doc.ChildNodes)
-                {
-                    if (defNode.Name == node.Name)
-                    {
-                        ex = true;
-                        if (defNode.ChildNodes.Count > 0)
-                            ex = CheckXml(defNode, node);
-                        break;
-                    }
-                }
-                if (!ex)
-                    return false;
-            }
-            return true;
-        }
-
-        static void LoadMods(string dir)
-        {
             try
             {
                 foreach (string mod in Directory.GetFiles(dir))
-                {
                     Utils.LoadMod(mod);
-                }
             }
             catch (Exception e)
             {
                 Console.WriteLine($"Error in loading mods. Error stack: {e}", "Loading Error");
             }
+
+            SplashScreenHide(true, true);
         }
-        /*static void InterpolateXmlSettings(XmlNode doc)
+
+        internal void SplashScreenShow(string bottomText, string name = "MODDER")
         {
-            foreach (XmlNode node in doc.ChildNodes)
+            new Thread(() =>
             {
-                if (node.ChildNodes.Count > 0)
+                SplashScreen = new(name, bottomText);
+                Application.Run(SplashScreen);
+            }).Start();
+        }
+
+        internal void SplashScreenHide(bool tryUntilSuccess = true, bool tryUntilNotNull = false)
+        {
+            while (true)
+            {
+                try
                 {
-                    InterpolateXmlSettings(node);
+                    if (SplashScreen != null)
+                    {
+                        SplashScreen.Invoke(new Action(SplashScreen.Close));
+                        break;
+                    }
+                    else if (!tryUntilNotNull)
+                        break;
                 }
-                if (node.Value != null)
+                catch
                 {
-                    string val = Utils.Replace(kvp.Value, settings);
-                    settings.Add(kvp.Key, val);
-                    Console.WriteLine($"key: {kvp.Key}, val: {val}");
+                    if (!tryUntilSuccess)
+                        break;
                 }
             }
-        }*/
+        }
+
+        internal void CheckXmlFile(string Xml)
+        {
+            Print("Checking main.xml file");
+            if (!File.Exists(this.PATH + "main.xml"))
+                File.WriteAllText(this.PATH + "main.xml", Xml);
+        }
+
+        internal static void Print(object? txt, string? end = "\n", bool _ = false)
+        {
+            Console.Write(txt);
+            Console.Write(end);
+        }
+        internal void Print(object? txt, int holdID, string _ = "")
+        {
+            if (this.HoldList.TryGetValue(holdID, out List<object?>? list))
+            {
+                list.Add(txt);
+                this.HoldList[holdID] = list;
+            }
+            else
+                this.HoldList.Add(holdID, [txt]);
+        }
+
+        internal void Print(int holdID, string? end, int _ = 0)
+        {
+            if (!this.HoldList.TryGetValue(holdID, out List<object?>? list))
+                return;
+
+            foreach (object? txt in list)
+                Print(txt, end);
+
+            this.HoldList.Remove(holdID);
+        }
     }
 }

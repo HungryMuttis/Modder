@@ -1,11 +1,13 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Xml;
 
 namespace Modder
 {
     public static class Utils
     {
-        public static object? RunFunction(Type mod, string funcName, object[]? parameters = null)
+        public static object? RunFunction(Type mod, string funcName, params object[]? parameters)
         {
             return mod.GetMethod(funcName)?.Invoke(Activator.CreateInstance(mod), parameters);
         }
@@ -79,32 +81,83 @@ namespace Modder
 
             return newValue.ToString();
         }
-        public static (bool, Mod?) LoadMod(string mod)
+        public static bool CheckXml(XmlNode defDoc, XmlNode doc)
+        {
+            foreach (XmlNode defNode in defDoc.ChildNodes)
+            {
+                bool ex = false;
+                foreach (XmlNode node in doc.ChildNodes)
+                {
+                    if (defNode.Name == node.Name)
+                    {
+                        ex = true;
+                        if (defNode.ChildNodes.Count > 0)
+                            ex = CheckXml(defNode, node);
+                        break;
+                    }
+                }
+                if (!ex)
+                    return false;
+            }
+            return true;
+        }
+        public static string SetupPATH()
+        {
+            Main.Print("Setting up ENV variables");
+            string? path = Environment.GetEnvironmentVariable("MODDER_PATH", EnvironmentVariableTarget.User);
+
+            if (path == null)
+            {
+                path = @"C:\ProgramData\Modder\";
+                Environment.SetEnvironmentVariable("MODDER_PATH", path, EnvironmentVariableTarget.User);
+            }
+
+            return path;
+        }
+        public static bool CheckInterface(Type selfInterface, Type interfaceType)
+        {
+            if (!selfInterface.GetProperties().Select(p => p).SequenceEqual(selfInterface.GetProperties().Select(p => p)) ||
+                !selfInterface.GetMethods().Select(m => m).SequenceEqual(selfInterface.GetMethods().Select(m => m)))
+                return false;
+
+            Main.Print($"{interfaceType} implements {selfInterface}");
+            return true;
+        }
+        public static Mod? LoadMod(string mod)
         {
             Assembly loadedAssembly = Assembly.LoadFile(mod);
 
             Type selfIGameMod = typeof(IGameMod);
-            Type? modIGameMod = loadedAssembly.GetType("Main.IGameMod");
             Type? modType = loadedAssembly.GetType("Main.Main");
 
-            if (modIGameMod == null || modType == null)
-                return (false, null);
+            if (modType == null)
+                return null;
 
-            if (!selfIGameMod.GetProperties().Select(p => p.Name).SequenceEqual(modIGameMod.GetProperties().Select(p => p.Name)) || !selfIGameMod.GetMethods().Select(m => m.Name).SequenceEqual(modIGameMod.GetMethods().Select(m => m.Name)))
-                return (false, null);
+            if (!Utils.CheckInterface(selfIGameMod, modType))
+                return null;
 
-            if (!modIGameMod.IsAssignableFrom(modType))
-                return (false, null);
+            if (Activator.CreateInstance(modType) == null)
+                return null;
 
-            Console.WriteLine("The class fully implements the IGameMod interface.");
+            return new Mod(modType);
+        }
+        public static Design? LoadDesign(string design)
+        {
+            Assembly loadedAssembly = Assembly.LoadFile(design);
 
-            object? instance = Activator.CreateInstance(modType);
+            Type selfIDesign = typeof(IGameMod);
+            Type? designType = loadedAssembly.GetType("Main.Main");
 
-            if (instance == null)
-                return (false, null);
+            if (designType == null)
+                return null;
 
-            Console.WriteLine((string?)RunFunction(modType, "DoSomething"));
-            return (true, new Mod(modType));
+            if (!Utils.CheckInterface(selfIDesign, designType))
+                return null;
+
+            if (Activator.CreateInstance(designType) == null)
+                return null;
+
+            return new Design(designType);
         }
     }
 }
