@@ -1,12 +1,12 @@
-using System.Security.Cryptography;
+using Modder;
 
 namespace default_black
 {
     public partial class frmMain : Form
     {
-        List<object> Mods { get; set; }
+        List<Mod> Mods { get; set; }
         Dictionary<string, string> Settings { get; set; }
-        public frmMain(List<object> mods, Dictionary<string, string> settings)
+        public frmMain(List<Mod> mods, Dictionary<string, string> settings)
         {
             InitializeComponent();
             Mods = mods;

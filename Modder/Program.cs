@@ -1,5 +1,6 @@
 using System.Data;
 using System.Diagnostics.Eventing.Reader;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms.VisualStyles;
 using System.Xml;
@@ -43,7 +44,8 @@ namespace Modder
         public Main(IntPtr ptr)
         {
             Print("INIT started");
-            Ptr = ptr;
+            this.Ptr = ptr;
+            ShowWindow(this.Ptr, 4);
 
             Print("Showing splash screen");
             this.SplashScreenShow("Loading...");
@@ -68,10 +70,12 @@ namespace Modder
         <Settings>{DEFAULT:PATH}Settings\</Settings>
         <Mods>{DEFAULT:PATH}Mods\</Mods>
         <ModData>{DEFAULT:PATH}ModData\</ModData>
+        <ModLists>{PATH:ModData}ModLists\</ModLists>
         <Logs>{DEFAULT:PATH}Logs\</Logs>
     </PATH>
     <Params>
         <Design>{PATH:Designs}default-black.dll</Design>
+        <ModList>{PATH:ModLists}default.xml</ModList>
         <ModWarn>true</ModWarn>
     </Params>
 </xml>
@@ -113,7 +117,6 @@ namespace Modder
 
             XmlDocument defDoc = new();
             defDoc.LoadXml(Xml);
-
 
             if (defDoc.DocumentElement == null)
             {
@@ -168,29 +171,54 @@ namespace Modder
                     !Directory.Exists(kvp.Value))
                 {
                     Directory.CreateDirectory(kvp.Value);
-                    Print($" Created directory {kvp.Value}", 1);
+                    Print($" Created directory {kvp.Value}", 0);
                 }
             }
 
-            Print(1, "\n");
+            Print(0, "\n");
 
             SplashScreenHide(true, true);
         }
 
         public void Start()
         {
-            //Before startting the design, we need to get all the mods
-            this.StartDesign();
+            Print("Loading design");
+            Design design = this.GetDesign();
+            Print("Loading mods");
+            List<Mod> mods = this.GetMods();
+            Print("Starting the loaded design");
+            this.StartDesign(mods, design);
         }
 
-        private void StartDesign()
+        private Design GetDesign()
         {
             Design? design = null;
 
             if (File.Exists(this.Settings["Params:Design"]))
-                design = Utils.LoadDesign(this.Settings["Params:Design"]);
-            else
+                design = Utils.Load<Design>(this.Settings["Params:Design"]);
+
+            if (design == null)
             {
+                Print($"The selected desing was not found in {this.Settings["Params:Design"]}");
+                foreach (string path in Directory.GetFiles(this.Settings["PATH:Designs"]))
+                {
+                    if (!path.EndsWith(".dll"))
+                        continue;
+
+                    Print($"Checking if {path} is a design");
+
+                    design = Utils.Load<Design>(path);
+
+                    if (design == null)
+                        continue;
+
+                    break;
+                }
+            }
+
+            if (design == null)
+            {
+                Print($"No design was found in {this.Settings["PATH:Designs"]}");
                 foreach (string path in Directory.GetFiles(this.Settings["DEFAULT:HERE"]))
                 {
                     if (!path.EndsWith(".dll"))
@@ -198,10 +226,24 @@ namespace Modder
 
                     Print($"Checking if {path} is a design");
 
-                    design = Utils.LoadDesign(path);
+                    Design? des = Utils.Load<Design>(path);
 
-                    if (design != null)
-                        break;
+                    if (des == null)
+                        continue;
+
+                    design = des;
+
+                    bool del = true;
+
+                    if (File.Exists(this.Settings["PATH:Designs"] + path.Split(@"\")[^1]))
+                        del = false;
+
+                    File.Move(path, this.Settings["PATH:Designs"] + path.Split(@"\")[^1], del);
+
+                    if (del)
+                        File.Delete(path);
+
+                    break;
                 }
             }
 
@@ -212,10 +254,70 @@ namespace Modder
                 throw new DesignException("No design was found");
             }
 
+            return design;
+        }
+
+        private List<Mod> GetMods()
+        {
+            List<Mod?> mods = [];
+
+            foreach (string path in Directory.GetFiles(this.Settings["PATH:Mods"]))
+            {
+                if (!path.EndsWith(".dll"))
+                    continue;
+
+                mods.Add(Utils.Load<Mod>(path));
+            }
+
+            foreach (string path in Directory.GetFiles(this.Settings["DEFAULT:HERE"]))
+            {
+                if (!path.EndsWith(".dll"))
+                    continue;
+
+                mods.Add(Utils.Load<Mod>(path));
+            }
+
+            List<Mod> realMods = [];
+
+            foreach (Mod? mod in mods)
+                if (mod != null)
+                    if (mod.RealName == "no_name")
+                    {
+                        Print("A potentially broken mod was found without a name");
+                        if (Utils.Load<Design>(mod.Path) != null)
+                        {
+                            Print("A design was detected as a mod. Ignoring it");
+                            continue;
+                        }
+                        DialogResult dRes = Utils.Warn("A potentially broken mod was found\nStill add it?", "Broken Mod", MessageBoxButtons.YesNo, MessageBoxDefaultButton.Button2);
+                        if (dRes == DialogResult.Yes)
+                        {
+                            Print($" The mod was added located in {mod.Path}");
+                            realMods.Add(mod);
+                        }
+                    }
+                    else
+                    {
+                        if (!File.Exists(this.Settings["PATH:Mods"] + mod.Path.Split(@"\")[^1]))
+                        {
+                            File.Move(mod.Path, this.Settings["PATH:Mods"] + mod.Path.Split(@"\")[^1]);
+                            File.Delete(mod.Path);
+                        }
+
+                        Print($"Added mod {mod.Name} in {mod.Path}");
+
+                        realMods.Add(mod);
+                    }
+
+            return realMods;
+        }
+        private void StartDesign(List<Mod> mods, Design design)
+        {
+            //Console.ReadLine();
             ShowWindow(this.Ptr, 0);
             try
             {
-                design.Start([""], this.Settings);
+                design.Start(mods, this.Settings);
             }
             catch (Exception e)
             {
@@ -224,23 +326,6 @@ namespace Modder
                 Utils.Error("Fatal design error");
                 throw;
             }
-        }
-
-        public void LoadMods(string dir)
-        {
-            SplashScreenShow("Loading mods...");
-
-            try
-            {
-                foreach (string mod in Directory.GetFiles(dir))
-                    Utils.LoadMod(mod);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Error in loading mods. Error stack: {e}", "Loading Error");
-            }
-
-            SplashScreenHide(true, true);
         }
 
         internal void SplashScreenShow(string bottomText, string name = "MODDER")

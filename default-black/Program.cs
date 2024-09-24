@@ -9,10 +9,9 @@ namespace Main
         public event EventHandler<string>? NewLog;
         public event EventHandler<List<string>>? StartProgram;
 
-        public void Start(List<object> mods, Dictionary<string, string> settings)
+        public void Start(List<Mod> mods, Dictionary<string, string> settings)
         {
             frmMain mainForm = new(mods, settings);
-            //ApplicationConfiguration.Initialize();
             Application.Run(mainForm);
         }
     }
@@ -22,8 +21,14 @@ namespace _
 {
     public class _
     {
+        /// <summary>
+        /// The entry point of the program, just for it to be able to build
+        /// </summary>
         [STAThread]
-        public static void Main() { }
+        public static void Main()
+        {
+            MessageBox.Show("This design has to be satred using 'Modder' https://github.com/HungryMuttis/Modder", "Failed to start");
+        }
     }
 }
 

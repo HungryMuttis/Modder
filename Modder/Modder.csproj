@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\IDesign\IDesign.csproj" />
-    <ProjectReference Include="..\Mod\Mod.csproj" />
+    <ProjectReference Include="..\IMod\IGameMod.csproj" />
     <ProjectReference Include="..\splashscreen\splashscreen.csproj" />
   </ItemGroup>
 

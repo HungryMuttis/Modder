@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Xml;
@@ -22,6 +23,10 @@ namespace Modder
         public static void Warn(string message, string caption = "Warning")
         {
             MessageBox.Show(message, caption, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+        public static DialogResult Warn(string message, string caption = "Warning", MessageBoxButtons messageBoxButtons = MessageBoxButtons.OK, MessageBoxDefaultButton messageBoxDefaultButton = MessageBoxDefaultButton.Button1)
+        {
+            return MessageBox.Show(message, caption, messageBoxButtons, MessageBoxIcon.Warning, messageBoxDefaultButton);
         }
 
         /// <summary>
@@ -114,18 +119,20 @@ namespace Modder
 
             return path;
         }
-        public static bool CheckInterface(Type selfInterface, Type interfaceType)
+        public static bool CheckInterface(Type selfInterface, Type dllType, string? path = null)
         {
-            if (!selfInterface.GetProperties().Select(p => p).SequenceEqual(selfInterface.GetProperties().Select(p => p)) ||
-                !selfInterface.GetMethods().Select(m => m).SequenceEqual(selfInterface.GetMethods().Select(m => m)))
-                return false;
+            foreach (MemberInfo requiredMember in selfInterface.GetMembers())
+                if (dllType.GetMember(requiredMember.Name).Length == 0)
+                {
+                    Console.WriteLine($"{(string.IsNullOrEmpty(path) ? dllType : path)} does not implement the required member: {requiredMember.Name}");
+                    return false;
+                }
 
-            Main.Print($"{interfaceType} implements {selfInterface}");
             return true;
         }
-        public static Mod? LoadMod(string mod)
+        /*public static Mod? LoadMod(string path)
         {
-            Assembly loadedAssembly = Assembly.LoadFile(mod);
+            Assembly loadedAssembly = Assembly.LoadFile(path);
 
             Type selfIGameMod = typeof(IGameMod);
             Type? modType = loadedAssembly.GetType("Main.Main");
@@ -136,16 +143,15 @@ namespace Modder
             if (!Utils.CheckInterface(selfIGameMod, modType))
                 return null;
 
-            if (Activator.CreateInstance(modType) == null)
-                return null;
+            Main.Print($"{path} implements {selfIGameMod}");
 
-            return new Mod(modType);
+            return new Mod(modType, path);
         }
         public static Design? LoadDesign(string design)
         {
             Assembly loadedAssembly = Assembly.LoadFile(design);
 
-            Type selfIDesign = typeof(IGameMod);
+            Type selfIDesign = typeof(IDesign);
             Type? designType = loadedAssembly.GetType("Main.Main");
 
             if (designType == null)
@@ -154,10 +160,31 @@ namespace Modder
             if (!Utils.CheckInterface(selfIDesign, designType))
                 return null;
 
-            if (Activator.CreateInstance(designType) == null)
+            Main.Print($"{design} implements {selfIDesign}");
+            
+            return new Design(designType);
+        }*/
+        public static T? Load<T>(string path) where T : class
+        {
+            Type[] selfInterfaces = typeof(T).GetInterfaces();
+            Type selfInterface = selfInterfaces[0];
+
+            if (selfInterface == null)
+            {
+                Main.Print($"Given class does not implement any intercafes");
+                throw new ArgumentException("Given class does not implement any interfaces");
+            }
+
+            Assembly loadedAssembly = Assembly.LoadFile(path);
+            Type? dllType = loadedAssembly.GetType("Main.Main");
+
+            if (dllType == null)
                 return null;
 
-            return new Design(designType);
+            if (!Utils.CheckInterface(selfInterface, dllType, path))
+                return null;
+
+            return (T)Activator.CreateInstance(typeof(T), dllType, path)!;/////////////////////////////////////////////////////////////////////////////////////
         }
     }
 }

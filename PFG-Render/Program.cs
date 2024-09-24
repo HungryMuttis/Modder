@@ -7,10 +7,10 @@ namespace Main
 {
     public class Main : IGameMod
     {
-        public ushort Type { get { return 4; } } // This is a mod that adds content to the game
-        public string RealName { get { return "TestMod"; } } // The real name of the mod
-        public string Name { get { return "Test mod"; } } // The name of the mod
-        public string Description { get { return "This is a test mod."; } } // The description of the mod
+        public Int16 Type { get { return 0; } } // This is a mod that adds the rendering
+        public string RealName { get { return "Test"; } } // The real name of the mod
+        public string Name { get { return "Test Game"; } } // The name of the mod (it will be used as the name of the application)
+        public string Description { get { return "This is a test game"; } } // The description of the mod
         public string Version { get { return "1.0.0"; } } // The version of the mod
         public string Patch { get { return ""; } } // No patch for this version
         public (string, (string, string[]?)[])[] Required { get { return []; } } // No required mods or libraries

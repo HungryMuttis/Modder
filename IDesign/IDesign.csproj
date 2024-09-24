@@ -9,4 +9,8 @@
     <BaseOutputPath></BaseOutputPath>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Mod\Mod.csproj" />
+  </ItemGroup>
+
 </Project>
