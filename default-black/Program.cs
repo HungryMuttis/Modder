@@ -11,7 +11,7 @@ namespace Main
 
         public void Start(List<Mod> mods, Dictionary<string, string> settings)
         {
-            frmMain mainForm = new(mods, settings);
+            MainForm mainForm = new(mods, settings, AddLog, NewLog, StartProgram);
             Application.Run(mainForm);
         }
     }

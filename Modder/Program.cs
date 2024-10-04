@@ -41,9 +41,12 @@ namespace Modder
 
         private Dictionary<int, List<object?>> HoldList { get; set; } = [];
         private SplashScreen? SplashScreen { get; set; }
+        private LogHandler LogHandle { get; }
         public Main(IntPtr ptr)
         {
             Print("INIT started");
+
+            this.LogHandle = new();
             this.Ptr = ptr;
             ShowWindow(this.Ptr, 4);
 
@@ -53,7 +56,7 @@ namespace Modder
             //Setting PATH and HERE values
             Print("Setting up DEFAULT variables");
             this.PATH = Utils.SetupPATH();
-            if (!Directory.Exists(this.PATH))
+            if(!Directory.Exists(this.PATH))
                 Directory.CreateDirectory(this.PATH);
             this.HERE = AppDomain.CurrentDomain.BaseDirectory;
 
@@ -62,7 +65,7 @@ namespace Modder
 <?xml version="1.0"?>
 <!--The main configuration for "Modder"-->
 <!--At runtime "COMMON" will have "PATH" and "HERE-->
-<!--"PATH" is the folder where this file should be stored (saved in an enviorment variable "MODDER_PATH")-->
+<!--"PATH" is the folder where this file should be stored(saved in an enviorment variable "MODDER_PATH")-->
 <!--"HERE" is the folder in which the EXE is located-->
 <xml>
     <PATH>
@@ -92,7 +95,7 @@ namespace Modder
             {
                 doc.Load(this.PATH + "main.xml");
             }
-            catch (Exception e)
+            catch(Exception e)
             {
                 Print("Failed to load default XML due to an error:");
                 Print(e);
@@ -101,9 +104,9 @@ namespace Modder
                 useDefSettings = true;
             }
 
-            if (doc.DocumentElement == null)
+            if(doc.DocumentElement == null)
             {
-                if (useDefSettings)
+                if(useDefSettings)
                 {
                     Print("Default settings are corrupted");
                     Utils.Error("Default settings are corrupted\nFixing this issue requires rebuilding the application", "XML Error");
@@ -118,23 +121,23 @@ namespace Modder
             XmlDocument defDoc = new();
             defDoc.LoadXml(Xml);
 
-            if (defDoc.DocumentElement == null)
+            if(defDoc.DocumentElement == null)
             {
                 Print("Default settings are corrupted");
                 Utils.Error("Default settings are corrupted.\nFixing this issue requires rebuilding the application", "XML Error");
                 throw new XmlException("Default settings are corrupted");
             }
 
-            if (!useDefSettings)
+            if(!useDefSettings)
             {
-                if (doc.DocumentElement == null)
+                if(doc.DocumentElement == null)
                 {
                     Print("Unexpected error occoured at checking 'doc'");
                     Utils.Error("Unexpected error occoured at checking 'doc'", "XML Error");
                     throw new XmlException("Unexpected error occoured at checking 'doc'");
                 }
 
-                if (!Utils.CheckXml(defDoc.DocumentElement, doc.DocumentElement))
+                if(!Utils.CheckXml(defDoc.DocumentElement, doc.DocumentElement))
                 {
                     Print("User settings do not match the template");
                     Print("Using default settings");
@@ -145,12 +148,12 @@ namespace Modder
 
             XmlDocument xmlSettings;
 
-            if (useDefSettings)
+            if(useDefSettings)
                 xmlSettings = defDoc;
             else
                 xmlSettings = doc;
             
-            if (xmlSettings.DocumentElement == null)
+            if(xmlSettings.DocumentElement == null)
             {
                 Print("Unexpected error occoured at checking 'xmlSettings'");
                 Utils.Error("Unexpected error occoured at checking 'xmlSettings'", "XML Error");
@@ -163,11 +166,11 @@ namespace Modder
             this.Settings = interpolator.Interpolate(xmlSettings);
 
             Print("Interpolated settings:");
-            foreach (KeyValuePair<string, string> kvp in this.Settings.AsEnumerable())
+            foreach(KeyValuePair<string, string> kvp in this.Settings.AsEnumerable())
             {
                 Print($" {kvp.Key} {kvp.Value}");
 
-                if (kvp.Key.StartsWith("PATH:") &&
+                if(kvp.Key.StartsWith("PATH:") &&
                     !Directory.Exists(kvp.Value))
                 {
                     Directory.CreateDirectory(kvp.Value);
@@ -194,60 +197,60 @@ namespace Modder
         {
             Design? design = null;
 
-            if (File.Exists(this.Settings["Params:Design"]))
+            if(File.Exists(this.Settings["Params:Design"]))
                 design = Utils.Load<Design>(this.Settings["Params:Design"]);
 
-            if (design == null)
+            if(design == null)
             {
                 Print($"The selected desing was not found in {this.Settings["Params:Design"]}");
-                foreach (string path in Directory.GetFiles(this.Settings["PATH:Designs"]))
+                foreach(string path in Directory.GetFiles(this.Settings["PATH:Designs"]))
                 {
-                    if (!path.EndsWith(".dll"))
+                    if(!path.EndsWith(".dll"))
                         continue;
 
                     Print($"Checking if {path} is a design");
 
                     design = Utils.Load<Design>(path);
 
-                    if (design == null)
+                    if(design == null)
                         continue;
 
                     break;
                 }
             }
 
-            if (design == null)
+            if(design == null)
             {
                 Print($"No design was found in {this.Settings["PATH:Designs"]}");
-                foreach (string path in Directory.GetFiles(this.Settings["DEFAULT:HERE"]))
+                foreach(string path in Directory.GetFiles(this.Settings["DEFAULT:HERE"]))
                 {
-                    if (!path.EndsWith(".dll"))
+                    if(!path.EndsWith(".dll"))
                         continue;
 
                     Print($"Checking if {path} is a design");
 
                     Design? des = Utils.Load<Design>(path);
 
-                    if (des == null)
+                    if(des == null)
                         continue;
 
                     design = des;
 
                     bool del = true;
 
-                    if (File.Exists(this.Settings["PATH:Designs"] + path.Split(@"\")[^1]))
+                    if(File.Exists(this.Settings["PATH:Designs"] + path.Split(@"\")[^1]))
                         del = false;
 
                     File.Move(path, this.Settings["PATH:Designs"] + path.Split(@"\")[^1], del);
 
-                    if (del)
+                    if(del)
                         File.Delete(path);
 
                     break;
                 }
             }
 
-            if (design == null)
+            if(design == null)
             {
                 Print("No design was found");
                 Utils.Error("No viable design DLL was found\nGet the DLL and add it to the PATH:DESIGNS directory, or to the EXE directory", "No design found");
@@ -261,17 +264,17 @@ namespace Modder
         {
             List<Mod?> mods = [];
 
-            foreach (string path in Directory.GetFiles(this.Settings["PATH:Mods"]))
+            foreach(string path in Directory.GetFiles(this.Settings["PATH:Mods"]))
             {
-                if (!path.EndsWith(".dll"))
+                if(!path.EndsWith(".dll"))
                     continue;
 
                 mods.Add(Utils.Load<Mod>(path));
             }
 
-            foreach (string path in Directory.GetFiles(this.Settings["DEFAULT:HERE"]))
+            foreach(string path in Directory.GetFiles(this.Settings["DEFAULT:HERE"]))
             {
-                if (!path.EndsWith(".dll"))
+                if(!path.EndsWith(".dll"))
                     continue;
 
                 mods.Add(Utils.Load<Mod>(path));
@@ -279,18 +282,18 @@ namespace Modder
 
             List<Mod> realMods = [];
 
-            foreach (Mod? mod in mods)
-                if (mod != null)
-                    if (mod.RealName == "no_name")
+            foreach(Mod? mod in mods)
+                if(mod != null)
+                    if(mod.RealName == "no_name")
                     {
                         Print("A potentially broken mod was found without a name");
-                        if (Utils.Load<Design>(mod.Path) != null)
+                        if(Utils.Load<Design>(mod.Path) != null)
                         {
                             Print("A design was detected as a mod. Ignoring it");
                             continue;
                         }
                         DialogResult dRes = Utils.Warn("A potentially broken mod was found\nStill add it?", "Broken Mod", MessageBoxButtons.YesNo, MessageBoxDefaultButton.Button2);
-                        if (dRes == DialogResult.Yes)
+                        if(dRes == DialogResult.Yes)
                         {
                             Print($" The mod was added located in {mod.Path}");
                             realMods.Add(mod);
@@ -298,7 +301,7 @@ namespace Modder
                     }
                     else
                     {
-                        if (!File.Exists(this.Settings["PATH:Mods"] + mod.Path.Split(@"\")[^1]))
+                        if(!File.Exists(this.Settings["PATH:Mods"] + mod.Path.Split(@"\")[^1]))
                         {
                             File.Move(mod.Path, this.Settings["PATH:Mods"] + mod.Path.Split(@"\")[^1]);
                             File.Delete(mod.Path);
@@ -319,7 +322,7 @@ namespace Modder
             {
                 design.Start(mods, this.Settings);
             }
-            catch (Exception e)
+            catch(Exception e)
             {
                 ShowWindow(this.Ptr, 4);
                 Print($"Design error: {e}");
@@ -339,21 +342,21 @@ namespace Modder
 
         internal void SplashScreenHide(bool tryUntilSuccess = true, bool tryUntilNotNull = false)
         {
-            while (true)
+            while(true)
             {
                 try
                 {
-                    if (SplashScreen != null)
+                    if(SplashScreen != null)
                     {
                         SplashScreen.Invoke(new Action(SplashScreen.Close));
                         break;
                     }
-                    else if (!tryUntilNotNull)
+                    else if(!tryUntilNotNull)
                         break;
                 }
                 catch
                 {
-                    if (!tryUntilSuccess)
+                    if(!tryUntilSuccess)
                         break;
                 }
             }
@@ -362,7 +365,7 @@ namespace Modder
         internal void CheckXmlFile(string Xml)
         {
             Print("Checking main.xml file");
-            if (!File.Exists(this.PATH + "main.xml"))
+            if(!File.Exists(this.PATH + "main.xml"))
                 File.WriteAllText(this.PATH + "main.xml", Xml);
         }
 
@@ -373,7 +376,7 @@ namespace Modder
         }
         internal void Print(object? txt, int holdID, string _ = "")
         {
-            if (this.HoldList.TryGetValue(holdID, out List<object?>? list))
+            if(this.HoldList.TryGetValue(holdID, out List<object?>? list))
             {
                 list.Add(txt);
                 this.HoldList[holdID] = list;
@@ -384,10 +387,10 @@ namespace Modder
 
         internal void Print(int holdID, string? end, int _ = 0)
         {
-            if (!this.HoldList.TryGetValue(holdID, out List<object?>? list))
+            if(!this.HoldList.TryGetValue(holdID, out List<object?>? list))
                 return;
 
-            foreach (object? txt in list)
+            foreach(object? txt in list)
                 Print(txt, end);
 
             this.HoldList.Remove(holdID);

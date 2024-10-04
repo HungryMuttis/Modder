@@ -42,11 +42,11 @@ namespace Modder
 
             bool interp = false;
             bool cl = false;
-            foreach (char c in value)
+            foreach(char c in value)
             {
-                if (c == '{')
+                if(c == '{')
                 {
-                    if (!interp)
+                    if(!interp)
                         interp = true;
                     else
                     {
@@ -54,14 +54,14 @@ namespace Modder
                         newValue.Append('{');
                     }
                 }
-                else if (c == '}')
+                else if(c == '}')
                 {
-                    if (interp)
+                    if(interp)
                     {
                         interp = false;
                         string word = toInterp.ToString();
-                        foreach (KeyValuePair<string, string> kvp in replacements.AsEnumerable())
-                            if (word == kvp.Key)
+                        foreach(KeyValuePair<string, string> kvp in replacements.AsEnumerable())
+                            if(word == kvp.Key)
                             {
                                 word = kvp.Value;
                                 break;
@@ -70,7 +70,7 @@ namespace Modder
                         newValue.Append(word);
                         toInterp.Clear();
                     }
-                    else if (cl)
+                    else if(cl)
                         cl = false;
                     else
                     {
@@ -78,7 +78,7 @@ namespace Modder
                         newValue.Append('}');
                     }
                 }
-                else if (interp)
+                else if(interp)
                     toInterp.Append(c);
                 else
                     newValue.Append(c);
@@ -88,20 +88,20 @@ namespace Modder
         }
         public static bool CheckXml(XmlNode defDoc, XmlNode doc)
         {
-            foreach (XmlNode defNode in defDoc.ChildNodes)
+            foreach(XmlNode defNode in defDoc.ChildNodes)
             {
                 bool ex = false;
-                foreach (XmlNode node in doc.ChildNodes)
+                foreach(XmlNode node in doc.ChildNodes)
                 {
-                    if (defNode.Name == node.Name)
+                    if(defNode.Name == node.Name)
                     {
                         ex = true;
-                        if (defNode.ChildNodes.Count > 0)
+                        if(defNode.ChildNodes.Count > 0)
                             ex = CheckXml(defNode, node);
                         break;
                     }
                 }
-                if (!ex)
+                if(!ex)
                     return false;
             }
             return true;
@@ -111,7 +111,7 @@ namespace Modder
             Main.Print("Setting up ENV variables");
             string? path = Environment.GetEnvironmentVariable("MODDER_PATH", EnvironmentVariableTarget.User);
 
-            if (path == null)
+            if(path == null)
             {
                 path = @"C:\ProgramData\Modder\";
                 Environment.SetEnvironmentVariable("MODDER_PATH", path, EnvironmentVariableTarget.User);
@@ -121,8 +121,8 @@ namespace Modder
         }
         public static bool CheckInterface(Type selfInterface, Type dllType, string? path = null)
         {
-            foreach (MemberInfo requiredMember in selfInterface.GetMembers())
-                if (dllType.GetMember(requiredMember.Name).Length == 0)
+            foreach(MemberInfo requiredMember in selfInterface.GetMembers())
+                if(dllType.GetMember(requiredMember.Name).Length == 0)
                 {
                     Console.WriteLine($"{(string.IsNullOrEmpty(path) ? dllType : path)} does not implement the required member: {requiredMember.Name}");
                     return false;
@@ -137,10 +137,10 @@ namespace Modder
             Type selfIGameMod = typeof(IGameMod);
             Type? modType = loadedAssembly.GetType("Main.Main");
 
-            if (modType == null)
+            if(modType == null)
                 return null;
 
-            if (!Utils.CheckInterface(selfIGameMod, modType))
+            if(!Utils.CheckInterface(selfIGameMod, modType))
                 return null;
 
             Main.Print($"{path} implements {selfIGameMod}");
@@ -154,10 +154,10 @@ namespace Modder
             Type selfIDesign = typeof(IDesign);
             Type? designType = loadedAssembly.GetType("Main.Main");
 
-            if (designType == null)
+            if(designType == null)
                 return null;
 
-            if (!Utils.CheckInterface(selfIDesign, designType))
+            if(!Utils.CheckInterface(selfIDesign, designType))
                 return null;
 
             Main.Print($"{design} implements {selfIDesign}");
@@ -169,7 +169,7 @@ namespace Modder
             Type[] selfInterfaces = typeof(T).GetInterfaces();
             Type selfInterface = selfInterfaces[0];
 
-            if (selfInterface == null)
+            if(selfInterface == null)
             {
                 Main.Print($"Given class does not implement any intercafes");
                 throw new ArgumentException("Given class does not implement any interfaces");
@@ -178,13 +178,13 @@ namespace Modder
             Assembly loadedAssembly = Assembly.LoadFile(path);
             Type? dllType = loadedAssembly.GetType("Main.Main");
 
-            if (dllType == null)
+            if(dllType == null)
                 return null;
 
-            if (!Utils.CheckInterface(selfInterface, dllType, path))
+            if(!Utils.CheckInterface(selfInterface, dllType, path))
                 return null;
 
-            return (T)Activator.CreateInstance(typeof(T), dllType, path)!;/////////////////////////////////////////////////////////////////////////////////////
+            return(T)Activator.CreateInstance(typeof(T), dllType, path)!;/////////////////////////////////////////////////////////////////////////////////////
         }
     }
 }

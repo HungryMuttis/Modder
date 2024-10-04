@@ -1,6 +1,6 @@
 ﻿namespace default_black
 {
-    partial class frmMain
+    partial class MainForm
     {
         /// <summary>
         ///  Required designer variable.
@@ -13,7 +13,7 @@
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if(disposing &&(components != null))
             {
                 components.Dispose();
             }
@@ -167,7 +167,7 @@
             MinimumSize = new Size(230, 160);
             Name = "frmMain";
             Text = "Modder";
-            ClientSizeChanged += frmMain_ClientSizeChanged;
+            ClientSizeChanged += MainForm_ClientSizeChanged;
             grbWindow.ResumeLayout(false);
             pnlWindow.ResumeLayout(false);
             pnlWindow.PerformLayout();

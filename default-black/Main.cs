@@ -2,15 +2,21 @@ using Modder;
 
 namespace default_black
 {
-    public partial class frmMain : Form
+    public partial class MainForm : Form
     {
+        public event EventHandler<string>? AddLog;
+        public event EventHandler<string>? NewLog;
+        public event EventHandler<List<string>>? StartProgram;
         List<Mod> Mods { get; set; }
         Dictionary<string, string> Settings { get; set; }
-        public frmMain(List<Mod> mods, Dictionary<string, string> settings)
+        public MainForm(List<Mod> mods, Dictionary<string, string> settings, EventHandler<string>? addLog, EventHandler<string>? newLog, EventHandler<List<string>>? startProgram)
         {
+            this.AddLog = addLog;
+            this.NewLog = newLog;
+            this.StartProgram = startProgram;
             InitializeComponent();
-            Mods = mods;
-            Settings = settings;
+            this.Mods = mods;
+            this.Settings = settings;
         }
 
         public RichTextBox GetLogOutput()
@@ -18,7 +24,7 @@ namespace default_black
             return rtbLogs;
         }
 
-        private void frmMain_ClientSizeChanged(object sender, EventArgs e)
+        private void MainForm_ClientSizeChanged(object sender, EventArgs e)
         {
             //grbWindow
             grbWindow.Height = this.Height - 63;

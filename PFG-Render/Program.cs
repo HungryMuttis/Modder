@@ -9,12 +9,12 @@ namespace Main
     {
         public Int16 Type { get { return 0; } } // This is a mod that adds the rendering
         public string RealName { get { return "Test"; } } // The real name of the mod
-        public string Name { get { return "Test Game"; } } // The name of the mod (it will be used as the name of the application)
+        public string Name { get { return "Test Game"; } } // The name of the mod(it will be used as the name of the application)
         public string Description { get { return "This is a test game"; } } // The description of the mod
         public string Version { get { return "1.0.0"; } } // The version of the mod
         public string Patch { get { return ""; } } // No patch for this version
-        public (string, (string, string[]?)[])[] Required { get { return []; } } // No required mods or libraries
-        public (string, (string, string[]?)[])[] Prohibited { get { return []; } } // No prohibited mods or libraries
+        public(string,(string, string[]?)[])[] Required { get { return []; } } // No required mods or libraries
+        public(string,(string, string[]?)[])[] Prohibited { get { return []; } } // No prohibited mods or libraries
     }
 }
 
@@ -26,7 +26,7 @@ namespace PFG_Render
         public static void Main()
         {
             using GameWindow game = new(GameWindowSettings.Default, NativeWindowSettings.Default);
-            game.RenderFrame += (FrameEventArgs e) =>
+            game.RenderFrame +=(FrameEventArgs e) =>
             {
                 GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
