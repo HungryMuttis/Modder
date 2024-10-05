@@ -2,10 +2,11 @@ using System.Data;
 using System.Diagnostics.Eventing.Reader;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Windows.Forms.VisualStyles;
 using System.Xml;
 using System.Xml.Xsl;
+using NLog;
 using Newtonsoft.Json;
+using NLog.LayoutRenderers;
 
 namespace Modder
 {
@@ -27,6 +28,7 @@ namespace Modder
     }
     public partial class Main : Form
     {
+        private static Logger logger = LogManager.GetCurrentClassLogger(); //doesn't enable any log types?
         [DllImport("user32.dll", SetLastError = true)]
         static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
@@ -48,7 +50,13 @@ namespace Modder
 
             this.LogHandle = new();
             this.Ptr = ptr;
-            ShowWindow(this.Ptr, 4);
+            ShowWindow(this.Ptr, this.CMD_SHOW);
+
+            logger.Info("test");
+            logger.Debug("test");
+            logger.Log(LogLevel.Info, "asd");
+            Console.Read();
+            Environment.Exit(0);
 
             Print("Showing splash screen");
             this.SplashScreenShow("Loading...");
@@ -319,14 +327,14 @@ namespace Modder
             LogHandle.New(LogType.Info, "test");
             LogHandle.NewRichTextBox(new(), true);
             Console.ReadLine(); ///////////////////////////////////////////////////////////////////////////
-            ShowWindow(this.Ptr, 0);
+            ShowWindow(this.Ptr, this.CMD_HIDE);
             try
             {
                 design.Start(mods, this.Settings);
             }
             catch (Exception e)
             {
-                ShowWindow(this.Ptr, 4);
+                ShowWindow(this.Ptr, this.CMD_SHOW);
                 Print($"Design error: {e}");
                 Utils.Error("Fatal design error");
                 throw;
