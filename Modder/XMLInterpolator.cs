@@ -15,7 +15,7 @@ namespace Modder
         }
         public Dictionary<string, string> Interpolate(XmlDocument doc)
         {
-            if(doc.DocumentElement == null)
+            if (doc.DocumentElement == null)
                 return Replacements;
 
             foreach(XmlNode node in doc.DocumentElement.ChildNodes)
@@ -26,30 +26,30 @@ namespace Modder
 
         public void InterpolateNode(XmlNode node, string preText = "")
         {
-            if(node.NodeType == XmlNodeType.Element)
+            if (node.NodeType == XmlNodeType.Element)
             {
-                if(node.Attributes != null)
+                if (node.Attributes != null)
                     foreach(XmlAttribute attribute in node.Attributes)
                         this.InterpolateValue(attribute.Value, preText, false);
 
                 foreach(XmlNode childNode in node.ChildNodes)
                     this.InterpolateNode(childNode, preText + node.Name + ":");
             }
-            else if(node.NodeType == XmlNodeType.Text)
+            else if (node.NodeType == XmlNodeType.Text)
                 this.InterpolateValue(node.Value, preText);
         }
 
         protected string InterpolateValue(string? value, string preText, bool save = true)
         {
             string newValue = this.InterpolateText(value);
-            if(save)
+            if (save)
                 Replacements.Add(preText.Remove(preText.Length - 1), newValue);
             return newValue;
         }
 
         protected string InterpolateText(string? value)
         {
-            if(value == null)
+            if (value == null)
                 return "";
 
             return Utils.Interpolate(value, Replacements);

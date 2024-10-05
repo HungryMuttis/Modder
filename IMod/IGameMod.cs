@@ -26,7 +26,7 @@
         string Description { get; } // The description of the mod or a library
         string Version { get; } // The version of the mod
         string Patch { get; } // In some cases changing version might mess up other mods that might depend on this one(patch should not include the version itself)
-       (string,(string, string[]?)[])[] Required { get; } // Mods might depend on other mods or libraries. This is a list of tuples containing the name, versions and maybe a patch of the required mods or libraries(all data has to be an exact match. If not, the mod will count as not found)
-       (string,(string, string[]?)[])[] Prohibited { get; } // A patch or a version of a mod cannot be present? This tuple is used to prohibit the user of using some mods while also having this one.(RealName,(Version, Patch[]?)[])[]
+        (string,(string, string[]?)[])[] Required { get; } // Mods might depend on other mods or libraries. This is a list of tuples containing the name, versions and maybe a patch of the required mods or libraries(all data has to be an exact match. If not, the mod will count as not found)
+        (string,(string, string[]?)[])[] Prohibited { get; } // A patch or a version of a mod cannot be present? This tuple is used to prohibit the user of using some mods while also having this one.(RealName,(Version, Patch[]?)[])[]
     }
 }

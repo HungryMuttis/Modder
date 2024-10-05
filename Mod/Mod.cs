@@ -41,10 +41,10 @@ namespace Modder
             string? patch =(string?)this.GetPropValue("Patch", instance);
             this.Patch = patch ?? "";
 
-           (string,(string, string[]?)[])[]? required =((string,(string, string[]?)[])[]?)this.GetPropValue("Required", instance);
+            (string,(string, string[]?)[])[]? required =((string,(string, string[]?)[])[]?)this.GetPropValue("Required", instance);
             this.Required = required ?? [];
 
-           (string,(string, string[]?)[])[]? prohibited =((string,(string, string[]?)[])[]?)this.GetPropValue("Prohibited", instance);
+            (string,(string, string[]?)[])[]? prohibited =((string,(string, string[]?)[])[]?)this.GetPropValue("Prohibited", instance);
             this.Prohibited = prohibited ?? [];
         }
 
