@@ -1,12 +1,6 @@
 using System.Data;
-using System.Diagnostics.Eventing.Reader;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Xml;
-using System.Xml.Xsl;
-using NLog;
-using Newtonsoft.Json;
-using NLog.LayoutRenderers;
 
 namespace Modder
 {
@@ -28,7 +22,6 @@ namespace Modder
     }
     public partial class Main : Form
     {
-        private static Logger logger = LogManager.GetCurrentClassLogger(); //doesn't enable any log types?
         [DllImport("user32.dll", SetLastError = true)]
         static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
@@ -41,28 +34,26 @@ namespace Modder
         public string HERE { get; }
         public Dictionary<string, string> Settings { get; set; }
 
-        private Dictionary<int, List<object?>> HoldList { get; set; } = [];
+        private Dictionary<int, List<Tuple<LogType, object?>>> HoldList { get; set; } = [];
         private SplashScreen? SplashScreen { get; set; }
         private LogHandler LogHandle { get; }
         public Main(IntPtr ptr)
         {
-            Print("INIT started");
+            Print("INIT started", LogType.Info);
 
-            this.LogHandle = new();
+            this.LogHandle = new()
+            {
+                Save = true,
+                WriteBlocksSave = false
+            };
             this.Ptr = ptr;
             ShowWindow(this.Ptr, this.CMD_SHOW);
 
-            logger.Info("test");
-            logger.Debug("test");
-            logger.Log(LogLevel.Info, "asd");
-            Console.Read();
-            Environment.Exit(0);
-
-            Print("Showing splash screen");
+            Print("Showing splash screen", LogType.Info);
             this.SplashScreenShow("Loading...");
 
             //Setting PATH and HERE values
-            Print("Setting up DEFAULT variables");
+            Print("Setting up DEFAULT variables", LogType.Info);
             this.PATH = Utils.SetupPATH();
             if (!Directory.Exists(this.PATH))
                 Directory.CreateDirectory(this.PATH);
@@ -72,9 +63,9 @@ namespace Modder
 """
 <?xml version="1.0"?>
 <!--The main configuration for "Modder"-->
-<!--At runtime "COMMON" will have "PATH" and "HERE-->
-<!--"PATH" is the folder where this file should be stored(saved in an enviorment variable "MODDER_PATH")-->
-<!--"HERE" is the folder in which the EXE is located-->
+<!--"DEFAULT" is a sumulated node at runtime having "PATH" and "HERE" nodes-->
+<!--"PATH" is the folder where MODDER saves its files (saved in an enviorment variable "MODDER_PATH")-->
+<!--"HERE" is the folder in which the EXE is located at runtime-->
 <xml>
     <PATH>
         <Designs>{DEFAULT:PATH}Designs\</Designs>
@@ -84,6 +75,11 @@ namespace Modder
         <ModLists>{PATH:ModData}ModLists\</ModLists>
         <Logs>{DEFAULT:PATH}Logs\</Logs>
     </PATH>
+    <Logging>
+        <WriteEnabled>true</WriteEnabled>
+        <WriteToFile>true</WriteToFile>
+        <WriteToTextBox>true</WriteToTextBox>
+    </Logging>
     <Params>
         <Design>{PATH:Designs}default-black.dll</Design>
         <ModList>{PATH:ModLists}default.xml</ModList>
@@ -95,7 +91,7 @@ namespace Modder
             this.CheckXmlFile(Xml);
 
             //Config loading
-            Print("Loading configs");
+            Print("Loading configs", LogType.Info);
             bool useDefSettings = false;
 
             XmlDocument doc = new();
@@ -105,8 +101,7 @@ namespace Modder
             }
             catch (Exception e)
             {
-                Print("Failed to load default XML due to an error:");
-                Print(e);
+                Print($"Failed to load user's XML settings due to an error:\n{e}", LogType.Error);
                 Utils.Warn("Failed to load main.xml\nDefault XML will be loaded", "XML Error");
                 doc.LoadXml(Xml);
                 useDefSettings = true;
@@ -116,12 +111,12 @@ namespace Modder
             {
                 if (useDefSettings)
                 {
-                    Print("Default settings are corrupted");
+                    Print("Default settings are corrupted", LogType.Fatal);
                     Utils.Error("Default settings are corrupted\nFixing this issue requires rebuilding the application", "XML Error");
                     throw new XmlException("Default XML is corrupted");
                 }
-                Print("User settings file does not contain any settings");
-                Print("Using default settings");
+                Print("User settings file does not contain any settings", LogType.Warning);
+                Print(" Using default settings", LogType.Info);
                 useDefSettings = true;
                 Utils.Warn("User settings file does not contain any settings. The default settings will be used", "XML Error");
             }
@@ -131,7 +126,7 @@ namespace Modder
 
             if (defDoc.DocumentElement == null)
             {
-                Print("Default settings are corrupted");
+                Print("Default settings are corrupted", LogType.Fatal);
                 Utils.Error("Default settings are corrupted.\nFixing this issue requires rebuilding the application", "XML Error");
                 throw new XmlException("Default settings are corrupted");
             }
@@ -140,15 +135,15 @@ namespace Modder
             {
                 if (doc.DocumentElement == null)
                 {
-                    Print("Unexpected error occoured at checking 'doc'");
+                    Print("Unexpected error occoured at checking 'doc'", LogType.Fatal);
                     Utils.Error("Unexpected error occoured at checking 'doc'", "XML Error");
                     throw new XmlException("Unexpected error occoured at checking 'doc'");
                 }
 
                 if (!Utils.CheckXml(defDoc.DocumentElement, doc.DocumentElement))
                 {
-                    Print("User settings do not match the template");
-                    Print("Using default settings");
+                    Print("User settings do not match the template", LogType.Warning);
+                    Print("Using default settings", LogType.Info);
                     useDefSettings = true;
                     Utils.Warn("User settings do not match the template\nDefault settings will be used", "XML Warning");
                 }
@@ -163,41 +158,44 @@ namespace Modder
             
             if (xmlSettings.DocumentElement == null)
             {
-                Print("Unexpected error occoured at checking 'xmlSettings'");
+                Print("Unexpected error occoured at checking 'xmlSettings'", LogType.Fatal);
                 Utils.Error("Unexpected error occoured at checking 'xmlSettings'", "XML Error");
                 throw new XmlException("Unexpected error occoured at checking 'xmlSettings'");
             }
 
             XMLInterpolator interpolator = new(this.PATH, this.HERE);
 
-            Print("Interpolating settings");
+            Print("Interpolating settings", LogType.Info);
             this.Settings = interpolator.Interpolate(xmlSettings);
 
-            Print("Interpolated settings:");
+            Print("Interpolated settings:", LogType.None);
             foreach(KeyValuePair<string, string> kvp in this.Settings.AsEnumerable())
             {
-                Print($" {kvp.Key} {kvp.Value}");
+                Print($" {kvp.Key} {kvp.Value}", LogType.None);
 
                 if (kvp.Key.StartsWith("PATH:") &&
                     !Directory.Exists(kvp.Value))
                 {
                     Directory.CreateDirectory(kvp.Value);
-                    Print($" Created directory {kvp.Value}", 0);
+                    Print($" Created directory {kvp.Value}", LogType.Info, 0);
                 }
             }
 
-            Print(0, "\n");
+            this.LogHandle.NewFolder(this.Settings["PATH:Logs"], "", true, LogsRestoreMethod.Saved, LogsRestoreMethod.LogFile);
+            PrintHold(0, "");
 
             SplashScreenHide(true, true);
         }
 
         public void Start()
         {
-            Print("Loading design");
+            Print("Loading design", LogType.Info);
             Design design = this.GetDesign();
-            Print("Loading mods");
+            Print("Design loaded", LogType.OK);
+            Print("Loading mods", LogType.Info);
             List<Mod> mods = this.GetMods();
-            Print("Starting the loaded design");
+            Print("Mods loaded", LogType.OK);
+            Print("Starting the loaded design", LogType.Info);
             this.StartDesign(mods, design);
         }
 
@@ -324,9 +322,8 @@ namespace Modder
         }
         private void StartDesign(List<Mod> mods, Design design)
         {
-            LogHandle.New(LogType.Info, "test");
-            LogHandle.NewRichTextBox(new(), true);
-            Console.ReadLine(); ///////////////////////////////////////////////////////////////////////////
+            LogHandle.NewRichTextBox(new(), LogsRestoreMethod.Saved);
+            //Console.ReadLine(); ///////////////////////////////////////////////////////////////////////////
             ShowWindow(this.Ptr, this.CMD_HIDE);
             try
             {
@@ -378,30 +375,39 @@ namespace Modder
             if (!File.Exists(this.PATH + "main.xml"))
                 File.WriteAllText(this.PATH + "main.xml", Xml);
         }
-
-        internal static void Print(object? txt, string? end = "\n", bool _ = false)
+        internal static void Print(object? txt, string? end = "\n")
         {
+            if (end == "\n")
+                end = Environment.NewLine;
+
             Console.Write(txt);
             Console.Write(end);
         }
-        internal void Print(object? txt, int holdID, string _ = "")
+        internal void Print(object? txt, LogType type, string? end = "\n")
         {
-            if (this.HoldList.TryGetValue(holdID, out List<object?>? list))
-            {
-                list.Add(txt);
-                this.HoldList[holdID] = list;
-            }
+            if (this.LogHandle != null && this.LogHandle.Usable)
+                this.LogHandle.New(type, $"{txt}{end}");
+
+            Main.Print(txt, end);
+        }
+        internal void Print(object? txt, LogType type, int holdID, string? end = "\n")
+        {
+            if (end == "\n")
+                end = Environment.NewLine;
+
+            if (HoldList.TryGetValue(holdID, out List<Tuple<LogType, object?>>? value))
+                value.Add(new(type, txt));
             else
-                this.HoldList.Add(holdID, [txt]);
+                this.HoldList.Add(holdID, [new(type, txt + end)]);
         }
 
-        internal void Print(int holdID, string? end, int _ = 0)
+        internal void PrintHold(int holdID, string? end)
         {
-            if (!this.HoldList.TryGetValue(holdID, out List<object?>? list))
+            if (!this.HoldList.TryGetValue(holdID, out List<Tuple<LogType, object?>>? value))
                 return;
 
-            foreach(object? txt in list)
-                Print(txt, end);
+            foreach(Tuple<LogType, object?> tpl in value)
+                Print(tpl.Item2, tpl.Item1, end);
 
             this.HoldList.Remove(holdID);
         }

@@ -1,6 +1,4 @@
-﻿using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
+﻿using System.Reflection;
 using System.Text;
 using System.Xml;
 
@@ -184,7 +182,35 @@ namespace Modder
             if (!Utils.CheckInterface(selfInterface, dllType, path))
                 return null;
 
-            return(T)Activator.CreateInstance(typeof(T), dllType, path)!;/////////////////////////////////////////////////////////////////////////////////////
+            return(T)Activator.CreateInstance(typeof(T), dllType, path)!;
+        }
+
+        /// <summary>
+        /// Splits the given string by the given chars, also, keeps the split chars in the string (at the end)
+        /// </summary>
+        /// <param name="chars">The chars that will split the string</param>
+        /// <returns></returns>
+        public static string[] SplitFull(string str, params char[] chars)
+        {
+            StringBuilder sb = new();
+            List<string> strs = [];
+
+            foreach (char ch in str)
+            {
+                if (chars.Contains(ch))
+                {
+                    sb.Append(ch);
+                    strs.Add(sb.ToString());
+                    sb.Clear();
+                }
+                else
+                    sb.Append(ch);
+            }
+
+            if (sb.Length > 0)
+                strs.Add(sb.ToString());
+
+            return [.. strs];
         }
     }
 }
