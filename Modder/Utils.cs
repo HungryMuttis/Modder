@@ -106,27 +106,24 @@ namespace Modder
         }
         public static string SetupPATH()
         {
-            Main.Print("Setting up ENV variables");
             string? path = Environment.GetEnvironmentVariable("MODDER_PATH", EnvironmentVariableTarget.User);
 
-            if (path == null)
-            {
-                path = @"C:\ProgramData\Modder\";
-                Environment.SetEnvironmentVariable("MODDER_PATH", path, EnvironmentVariableTarget.User);
-            }
+            if (path != null)
+                return path;
+
+            // First time introduction
+            MessageBox.Show("Hello there!\nAs I see, this is your first time trying Modder", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("This program is made to be used by a community\nIt can do anything with the right mod(s) installed\nAnd sadly, that anything means malicuos mods can harm your PC", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            DialogResult rs = MessageBox.Show("Press NO if:\n  You don't know what mods you are installing\n  Someone else wants you to run specific design and/or mod(s)\n  You wish to stop Modder from running\nPress YES if:\n  You know what you are doing\n  You have checked that the mod(s)/design you are about to load doesn't conatin any viruses\n\nNote: after starting Modder, this popup will never appear again", "Do you wish to run Modder", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
+            if (rs == DialogResult.No)
+                Environment.Exit(0);
+
+            Main.Print("Setting up ENV variables", LogType.Info);
+            path = @"C:\ProgramData\Modder\";
+            Environment.SetEnvironmentVariable("MODDER_PATH", path, EnvironmentVariableTarget.User);
 
             return path;
-        }
-        public static bool CheckInterface(Type selfInterface, Type dllType, string? path = null)
-        {
-            foreach(MemberInfo requiredMember in selfInterface.GetMembers())
-                if (dllType.GetMember(requiredMember.Name).Length == 0)
-                {
-                    Console.WriteLine($"{(string.IsNullOrEmpty(path) ? dllType : path)} does not implement the required member: {requiredMember.Name}");
-                    return false;
-                }
 
-            return true;
         }
         /*public static Mod? LoadMod(string path)
         {
@@ -162,27 +159,21 @@ namespace Modder
             
             return new Design(designType);
         }*/
-        public static T? Load<T>(string path) where T : class
+        public static Type? Load<T>(string path) where T : class
         {
-            Type[] selfInterfaces = typeof(T).GetInterfaces();
-            Type selfInterface = selfInterfaces[0];
-
-            if (selfInterface == null)
+            try
             {
-                Main.Print($"Given class does not implement any intercafes");
-                throw new ArgumentException("Given class does not implement any interfaces");
+                Type? dllType;
+                if ((dllType = Assembly.LoadFile(path).GetTypes().FirstOrDefault(t => typeof(T).IsAssignableFrom(t))) == null)
+                    return null;
+                return dllType;
             }
-
-            Assembly loadedAssembly = Assembly.LoadFile(path);
-            Type? dllType = loadedAssembly.GetType("Main.Main");
-
-            if (dllType == null)
+            catch (Exception ex)
+            {
+                Main.Print(ex, LogType.Warning);
+                Main.Print(path, LogType.Warning);
                 return null;
-
-            if (!Utils.CheckInterface(selfInterface, dllType, path))
-                return null;
-
-            return(T)Activator.CreateInstance(typeof(T), dllType, path)!;
+            }
         }
 
         /// <summary>
