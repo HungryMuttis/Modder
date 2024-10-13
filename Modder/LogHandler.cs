@@ -235,7 +235,7 @@ namespace Modder
         private Tuple<string, string> FormatMessage(LogType type, string message, string time, string thread)
         {
             string p1 = $"[{time}] ";
-            string p2 = $"[{thread}/{type}] {message}";
+            string p2 = $"[{thread}/{type,-8}] {message}";
 
             return new(p1, p2);
         }
@@ -249,7 +249,7 @@ namespace Modder
                 (string p1, string p2) = this.FormatMessage(line.Item3, line.Item4[1..], line.Item5, line.Item2);
 
                 if (p1 != "")
-                    Write(p1 + p2);
+                    Write(p1 + p2 + '\n');
             }
             return 0;
         }
@@ -328,6 +328,9 @@ namespace Modder
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
 
+            if (!message.EndsWith('\n'))
+                message += '\n';
+
             return MakeLog(type, message, thread);
         }
         private int AppendText(string text, Color color)
@@ -400,7 +403,7 @@ namespace Modder
                 _ => Color.White,
             };
 
-            if ((ret = AppendText(p2 + "\n", color)) != 0)
+            if ((ret = AppendText(p2, color)) != 0)
                 return ret;
             return 0;
         }
