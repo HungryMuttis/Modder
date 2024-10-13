@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualBasic.Logging;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
@@ -9,7 +10,6 @@ namespace Modder
 {
     public enum LogsRestoreMethod
     {
-        Saved,
         TextBox,
         LogFile,
         ToDisplay
@@ -24,7 +24,6 @@ namespace Modder
         private RichTextBox? Logs { get; set; }
         private FileStream FS { get; set; }
         private StringBuilder ToDisplay { get; }
-        private StringBuilder Saved { get; }
         private StreamWriter Writer { get; set; }
         private string FilePath { get; set; }
         private bool TextBoxReady { get; set; } = false;
@@ -34,8 +33,6 @@ namespace Modder
         public bool WriteToFile { get; set; } = true;
         public bool WriteToTextBox { get; set; } = true;
         public bool WriteEnabled { get; set; } = true;
-        public bool Save { get; set; } = false;
-        public bool WriteBlocksSave { get; set; } = true;
 
         internal LogHandler(RichTextBox? logs = null, string path = @"Logs\", string cName = "")
         {
@@ -49,7 +46,6 @@ namespace Modder
                 AutoFlush = true
             };
             this.FS.Flush();
-            this.Saved = new();
             this.ToDisplay = new();
             this.Usable = true;
             if (this.Logs != null)
@@ -103,9 +99,7 @@ namespace Modder
             };
             this.FS.Flush();
 
-            Tuple<int, LogType, string, string>[] unpacked = LogHandler.UnpackLines(lines);
-
-            Write(unpacked);
+            Write(LogHandler.UnpackLines(lines));
         }
         public void NewRichTextBox(RichTextBox? logs)
         {
@@ -126,11 +120,9 @@ namespace Modder
 
             NewRichTextBox(logs);
 
-            Tuple<int, LogType, string, string>[] unpacked = LogHandler.UnpackLines(lines);
-
-            Display(unpacked);
+            Display(LogHandler.UnpackLines(lines));
         }
-        private string[] Restore(params LogsRestoreMethod[] restoreMethods)
+        private string[] Restore(LogsRestoreMethod[] restoreMethods)
         {
             string[] lines = [];
 
@@ -140,17 +132,6 @@ namespace Modder
 
                 switch (restoreMethod)
                 {
-                    case LogsRestoreMethod.Saved:
-                        {
-                            if (this.Saved.Length > 0)
-                            {
-                                // Reading and clearing StringBuilder
-                                lines = Utils.SplitFull(this.Saved.ToString(), '\n');
-                                this.Saved.Clear();
-                                restored = true;
-                            }
-                            break;
-                        }
                     case LogsRestoreMethod.LogFile:
                         {
                             try
@@ -181,7 +162,11 @@ namespace Modder
                         }
                     case LogsRestoreMethod.ToDisplay:
                         {
+                            if (this.ToDisplay.Length < 1)
+                                break;
 
+                            lines = this.ToDisplay.ToString().Split('\n');
+                            restored = true;
                             break;
                         }
                 }
@@ -192,19 +177,15 @@ namespace Modder
 
             return lines;
         }
-        private static Tuple<int, LogType, string, string>[] UnpackLines(string data)
+        private static Tuple<int, string, LogType, string, string>[] UnpackLines(string data)
         {
             string[] lines = Utils.SplitFull(data, '\n');
 
-            Console.Write(string.Join(", ", lines));
-            Console.ReadLine();
-            Console.Read();
-
             return LogHandler.UnpackLines(lines);
         }
-        private static Tuple<int, LogType, string, string>[] UnpackLines(string[] lines)
+        private static Tuple<int, string, LogType, string, string>[] UnpackLines(string[] lines)
         {
-            List<Tuple<int, LogType, string, string>> unpacked = [];
+            List<Tuple<int, string, LogType, string, string>> unpacked = [];
             
             foreach (string line in lines)
             {
@@ -213,16 +194,21 @@ namespace Modder
 
             return [.. unpacked];
         }
-        private static Tuple<int, LogType, string, string> UnpackLine(string line)
+        private static Tuple<int, string, LogType, string, string> UnpackLine(string line)
         {
             try
             {
                 if (line.Length < 1)
-                    return new(1, LogType.None, "", "");
+                    return new(1, "", LogType.None, "", "");
 
                 string[] splitLine = line.Split(']');
                 string p1 = string.Join(' ', splitLine[0][1..]);
-                string p2 = splitLine[1][2..];
+                Console.WriteLine(string.Join(", ", splitLine));
+                Console.WriteLine(splitLine.Length);
+                string asd = splitLine[1];
+                string[] p2s = asd[2..].Split('/');
+                string th = p2s[0];
+                string p2 = p2s[1];
                 string p3 = string.Join(' ', splitLine[2..]);
                 splitLine[^1] = p1;
 
@@ -238,37 +224,29 @@ namespace Modder
                     _ => LogType.None,
                 };
 
-                return new(0, type, p3, p1);
+                return new(0, th, type, p3, p1);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Unpacking failed\nError: {ex}", "Unpacking Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return new(-1, LogType.None, "", "");
+                return new(-1, "", LogType.None, "", "");
             }
         }
-        private Tuple<string, string> FormatMessage(LogType type, string message, string time)
+        private Tuple<string, string> FormatMessage(LogType type, string message, string time, string thread)
         {
-            if ((!WriteEnabled && WriteBlocksSave) || (!WriteEnabled && !Save))
-                return new("", "");
-
             string p1 = $"[{time}] ";
-            string p2 = $"[{type,-8}] {message}";
-
-            this.Saved.Append(p1 + p2);
-
-            if (!WriteEnabled)
-                return new("", "");
+            string p2 = $"[{thread}/{type}] {message}";
 
             return new(p1, p2);
         }
-        private int Write(Tuple<int, LogType, string, string>[] lines)
+        private int Write(Tuple<int, string, LogType, string, string>[] lines)
         {
-            foreach (Tuple<int, LogType, string, string> line in lines)
+            foreach (Tuple<int, string, LogType, string, string> line in lines)
             {
                 if (line.Item1 != 0)
                     continue;
 
-                (string p1, string p2) = this.FormatMessage(line.Item2, line.Item3[1..], line.Item4);
+                (string p1, string p2) = this.FormatMessage(line.Item3, line.Item4[1..], line.Item5, line.Item2);
 
                 if (p1 != "")
                     Write(p1 + p2);
@@ -277,7 +255,7 @@ namespace Modder
         }
         private int Write(string txt)
         {
-            if (!WriteToFile)
+            if (!WriteEnabled || !WriteToFile)
                 return 0;
 
             try
@@ -296,30 +274,30 @@ namespace Modder
         }
         private void Display()
         {
-            Tuple<int, LogType, string, string>[] unpacked = LogHandler.UnpackLines(this.ToDisplay.ToString());
+            Tuple<int, string, LogType, string, string>[] unpacked = LogHandler.UnpackLines(this.ToDisplay.ToString());
 
-            foreach (Tuple<int, LogType, string, string> line in unpacked)
+            foreach (Tuple<int, string, LogType, string, string> line in unpacked)
             {
                 if (line.Item1 != 0)
                     continue;
 
-                Display(line.Item2, line.Item3, line.Item4);
+                Display(line.Item3, line.Item4, line.Item5, line.Item2);
             }
         }
-        private int Display(Tuple<int, LogType, string, string>[] lines)
+        private int Display(Tuple<int, string, LogType, string, string>[] lines)
         {
-            foreach (Tuple<int, LogType, string, string> line in lines)
+            foreach (Tuple<int, string, LogType, string, string> line in lines)
             {
                 if (line.Item1 != 0)
                     continue;
 
-                Display(line.Item2, line.Item3, line.Item4);
+                Display(line.Item3, line.Item4, line.Item5, line.Item2);
             }
             return 0;
         }
-        private int Display(LogType type, string message, string time)
+        private int Display(LogType type, string message, string time, string thread)
         {
-            (string p1, string p2) = this.FormatMessage(type, message, time);
+            (string p1, string p2) = this.FormatMessage(type, message, time, thread);
 
             if (p1 == "")
                 return 0;
@@ -346,17 +324,17 @@ namespace Modder
 
             this.Logs = logs;
         }
-        public int New(LogType type, string message)
+        public int New(LogType type, string message, string thread = "Main")
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
 
-            return MakeLog(type, message);
+            return MakeLog(type, message, thread);
         }
         private int AppendText(string text, Color color)
         {
             if (this.Logs == null)
                 return 1;
-            else if (!WriteToTextBox)
+            else if (!WriteEnabled || !WriteToTextBox)
                 return 0;
 
             this.Logs.Invoke(new Action(() =>
@@ -370,9 +348,9 @@ namespace Modder
             return 0;
         }
 
-        private int MakeLog(LogType type, string message)
+        private int MakeLog(LogType type, string message, string thread)
         {
-            (string p1, string p2) = this.FormatMessage(type, message, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"));
+            (string p1, string p2) = this.FormatMessage(type, message, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"), thread);
 
             if (p1 == "")
                 return 0;
@@ -402,7 +380,7 @@ namespace Modder
             {
                 this.ToDisplay.Append(p1);
                 this.ToDisplay.Append(p2);
-                this.ToDisplay.Append('\n');
+                //this.ToDisplay.Append('\n');
                 return 0;
             }
 
