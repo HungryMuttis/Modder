@@ -18,7 +18,7 @@ namespace Modder
             this.Ptr = ptr;
             this.LogHandle.New("ModderHandler loaded", LogType.OK);
         }
-        public void Launch(Type[] mods, Type designType)
+        public void Launch(Tuple<Type, string>[] mods, Type designType)
         {
             this.LogHandle.New("Launching the Design", LogType.Info);
             Data.ShowWindow(this.Ptr, Data.CMD_HIDE);
