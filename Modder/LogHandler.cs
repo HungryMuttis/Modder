@@ -1,14 +1,4 @@
-﻿using Microsoft.VisualBasic.Logging;
-using System.Collections.Immutable;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Windows.Forms;
-using System.Windows.Forms.VisualStyles;
-using System.Xml.Linq;
-using static System.Net.Mime.MediaTypeNames;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
+﻿using System.Text.RegularExpressions;
 
 namespace Modder
 {
@@ -51,6 +41,7 @@ namespace Modder
             if (this.Logs != null)
                 this.Logs.HandleCreated += (object? s, EventArgs e) => { this.TextBoxReady = true; };
         }
+
         public void Dispose()
         {
             if (!_disposed)
@@ -62,6 +53,14 @@ namespace Modder
                 GC.SuppressFinalize(this);
             }
         }
+
+        /// <summary>
+        /// Changes the file this application writes its logs
+        /// </summary>
+        /// <param name="path">Folder in which the application will create the file</param>
+        /// <param name="cName">Custom name for the file</param>
+        /// <param name="delete">Delete the previous log file</param>
+        /// <param name="restoreMethods">Ways the application will try to restore the old logs</param>
         public void NewFolder(string path, string cName = "", bool delete = true, params LogsRestoreMethod[] restoreMethods)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -101,6 +100,11 @@ namespace Modder
 
             Write(LogHandler.UnpackLines(lines));
         }
+
+        /// <summary>
+        /// Sets a new RichTextBox for the log handler to write logs in
+        /// </summary>
+        /// <param name="logs">RichTextBox that will be used to write logs in</param>
         public void NewRichTextBox(RichTextBox? logs)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -108,6 +112,13 @@ namespace Modder
             this.TextBoxReady = logs?.IsHandleCreated ?? false;
             this.Logs = logs;
         }
+
+
+        /// <summary>
+        /// Sets a new RichTextBox for the log handler to write logs in
+        /// </summary>
+        /// <param name="logs">RichTextBox that will be used to write logs in</param>
+        /// <param name="restoreMethods">Ways the application will try to restore the old logs</param>
         public void NewRichTextBox(RichTextBox? logs, params LogsRestoreMethod[] restoreMethods)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -284,6 +295,14 @@ namespace Modder
                 return -1;
             }
         }
+
+        /// <summary>
+        /// Formats and displays the given info in the set RichTextBox
+        /// </summary>
+        /// <param name="thread">The name of the thread</param>
+        /// <param name="time">The current time</param>
+        /// <param name="message">The message that will be displayed</param>
+        /// <param name="type">The type of the log</param>
         public void Display(string thread, string time, string message, LogType type)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -324,6 +343,14 @@ namespace Modder
                 return -1;
             }
         }
+
+        /// <summary>
+        /// Writes a new log
+        /// </summary>
+        /// <param name="message">The message that will be displayed</param>
+        /// <param name="type">The type of the log</param>
+        /// <param name="thread">The name of the thread</param>
+        /// <returns></returns>
         public int New(string message, LogType type, string thread = "Main")
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -386,8 +413,8 @@ namespace Modder
                 LogType.OK => Color.Green,
                 LogType.Warning => Color.Yellow,
                 LogType.Error => Color.DarkOrange,
-                LogType.Critical => Color.Coral,
-                LogType.Fatal => Color.Crimson,
+                LogType.Critical => Color.Red,
+                LogType.Fatal => Color.DarkRed,
                 _ => Color.White,
             };
 
