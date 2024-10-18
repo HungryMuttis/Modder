@@ -160,7 +160,7 @@ namespace Modder
             Type design = this.GetDesign();
             Print("Design loaded", LogType.OK);
             Print("Loading mods", LogType.Info);
-            Tuple<Type string>[] mods = this.GetMods();
+            Tuple<Type, string>[] mods = this.GetMods();
             Print("Mods loaded", LogType.OK);
             Print("Starting the loaded design", LogType.Info);
             this.ModderHandle.Launch(mods, design);
