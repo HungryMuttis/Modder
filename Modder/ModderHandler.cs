@@ -33,6 +33,7 @@ namespace Modder
                         Utils.Error("Failed to build the found design");
                         Environment.Exit(0);
                     }
+                    this.Design.Log += DesignLog;
                     this.DesignForm = this.Design.Start(mods, this.Settings);
                 }
                 catch (Exception ex)
@@ -74,6 +75,11 @@ namespace Modder
         private static void Print(object txt, LogType type, string end = "\n")
         {
             Loader.Print(txt, type, end);
+        }
+
+        private void DesignLog(object obj, LogType type)
+        {
+            Print(obj, type);
         }
     }
 }
