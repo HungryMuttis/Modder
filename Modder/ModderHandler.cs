@@ -1,14 +1,9 @@
-﻿using System.Reflection;
-using System.Reflection.Metadata;
-using System.Runtime.InteropServices;
-using System.Security.Permissions;
+﻿using System.Runtime.InteropServices;
 
 namespace Modder
 {
     internal partial class ModderHandler
     {
-        [DllImport("user32.dll", SetLastError = true)]
-        static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
         private IntPtr Ptr { get; }
 
         private LogHandler LogHandle { get; }
@@ -26,7 +21,7 @@ namespace Modder
         public void Launch(Type[] mods, Type designType)
         {
             this.LogHandle.New("Launching the Design", LogType.Info);
-            ShowWindow(this.Ptr, Program.CMD_HIDE);
+            Data.ShowWindow(this.Ptr, Data.CMD_HIDE);
             try
             {
                 try
@@ -50,6 +45,10 @@ namespace Modder
                 while (!this.DesignForm.Created)
                     Thread.Sleep(10);
 
+                this.DesignForm.Invoke(() => {
+                    this.DesignForm.Text = $"Modder {Data.Version}";
+                });
+
                 RichTextBox? rtb;
 
                 while ((rtb = this.Design.GetTextBox()) == null)
@@ -65,7 +64,7 @@ namespace Modder
             }
             catch (Exception e)
             {
-                ShowWindow(this.Ptr, Program.CMD_SHOW);
+                Data.ShowWindow(this.Ptr, Data.CMD_SHOW);
                 Print($"Design error: {e}", LogType.Fatal);
                 Utils.Error("Fatal design error");
                 //Console.ReadLine();
