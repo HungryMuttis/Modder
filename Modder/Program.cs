@@ -80,9 +80,8 @@ namespace Modder
         <WriteToTextBox>true</WriteToTextBox>
     </Logging>
     <Params>
-        <Design>{PATH:Designs}default-black.dll</Design>
+        <Design>{DEFAULT:HERE}default-black.dll</Design>
         <ModList>{PATH:ModLists}default.xml</ModList>
-        <ModWarn>true</ModWarn>
     </Params>
 </xml>
 """;
