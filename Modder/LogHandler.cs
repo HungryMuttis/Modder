@@ -258,7 +258,7 @@ namespace Modder
                 if (line.Item1 != 0)
                     continue;
 
-                (string p1, string p2) = this.FormatMessage(line.Item3, line.Item4[1..], line.Item5, line.Item2);
+                (string p1, string p2) = this.FormatMessage(line.Item3, line.Item4, line.Item5, line.Item2);
 
                 if (p1 != "")
                     Write(p1 + p2 + '\n');
