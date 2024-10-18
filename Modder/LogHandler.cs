@@ -1,9 +1,13 @@
 ﻿using Microsoft.VisualBasic.Logging;
+using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
 using System.Xml.Linq;
+using static System.Net.Mime.MediaTypeNames;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TaskbarClock;
 
 namespace Modder
@@ -11,19 +15,16 @@ namespace Modder
     public enum LogsRestoreMethod
     {
         TextBox,
-        LogFile,
-        ToDisplay
+        LogFile
     }
     internal class LogHandler : IDisposable
     {
         private bool _disposed;
         private delegate void EmptyEventHandler();
-        private event EmptyEventHandler textBoxChanged;
 
         private readonly object Lock = new();
         private RichTextBox? Logs { get; set; }
         private FileStream FS { get; set; }
-        private StringBuilder ToDisplay { get; }
         private StreamWriter Writer { get; set; }
         private string FilePath { get; set; }
         private bool TextBoxReady { get; set; } = false;
@@ -46,13 +47,10 @@ namespace Modder
                 AutoFlush = true
             };
             this.FS.Flush();
-            this.ToDisplay = new();
             this.Usable = true;
             if (this.Logs != null)
                 this.Logs.HandleCreated += (object? s, EventArgs e) => { this.TextBoxReady = true; };
-            textBoxChanged += Display;
         }
-        private void test() { }
         public void Dispose()
         {
             if (!_disposed)
@@ -66,6 +64,8 @@ namespace Modder
         }
         public void NewFolder(string path, string cName = "", bool delete = true, params LogsRestoreMethod[] restoreMethods)
         {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+
             string[] lines = this.Restore(restoreMethods);
 
             this.Writer.Dispose();
@@ -105,17 +105,13 @@ namespace Modder
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
 
-            this.TextBoxReady = false;
+            this.TextBoxReady = logs?.IsHandleCreated ?? false;
             this.Logs = logs;
-            if (this.Logs != null)
-                this.Logs.HandleCreated += (object? s, EventArgs e) =>
-                {
-                    this.TextBoxReady = true;
-                    textBoxChanged.Invoke();
-                };
         }
         public void NewRichTextBox(RichTextBox? logs, params LogsRestoreMethod[] restoreMethods)
         {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+
             string[] lines = this.Restore(restoreMethods);
 
             NewRichTextBox(logs);
@@ -160,15 +156,6 @@ namespace Modder
                             restored = true;
                             break;
                         }
-                    case LogsRestoreMethod.ToDisplay:
-                        {
-                            if (this.ToDisplay.Length < 1)
-                                break;
-
-                            lines = this.ToDisplay.ToString().Split('\n');
-                            restored = true;
-                            break;
-                        }
                 }
 
                 if (restored)
@@ -179,31 +166,40 @@ namespace Modder
         }
         private static Tuple<int, string, LogType, string, string>[] UnpackLines(string data)
         {
-            string[] lines = Utils.SplitFull(data, '\n');
+            string[] lines = data.Split('\n');
 
             return LogHandler.UnpackLines(lines);
         }
         private static Tuple<int, string, LogType, string, string>[] UnpackLines(string[] lines)
         {
             List<Tuple<int, string, LogType, string, string>> unpacked = [];
-            
+
+            LogType oldLogType = LogType.None;
             foreach (string line in lines)
             {
-                unpacked.Add(LogHandler.UnpackLine(line));
+                Tuple<int, string, LogType, string, string> Uline = LogHandler.UnpackLine(line, oldLogType);
+                oldLogType = Uline.Item3;
+                unpacked.Add(Uline);
             }
 
             return [.. unpacked];
         }
-        private static Tuple<int, string, LogType, string, string> UnpackLine(string line)
+        private static Tuple<int /*error*/, string /*thread*/, LogType /*log type/error level*/, string /*message*/, string /*time*/> UnpackLine(string line, LogType old)
         {
             try
             {
                 if (line.Length < 1)
                     return new(1, "", LogType.None, "", "");
 
+                Tuple<string, string, string, string> lineData = CheckLine(line);
+
+                if (lineData.Item1 == "")
+                    return new(0, "", old, line, "");
+
+                /*
                 string[] splitLine = line.Split(']');
                 string p1 = string.Join(' ', splitLine[0][1..]);
-                Console.WriteLine(string.Join(", ", splitLine));
+                Console.WriteLine(string.Join(",", splitLine));
                 Console.WriteLine(splitLine.Length);
                 string asd = splitLine[1];
                 string[] p2s = asd[2..].Split('/');
@@ -211,20 +207,21 @@ namespace Modder
                 string p2 = p2s[1];
                 string p3 = string.Join(' ', splitLine[2..]);
                 splitLine[^1] = p1;
+                */
 
-                LogType type = p2 switch
+                LogType tp = lineData.Item3 switch
                 {
-                    "None    " => LogType.None,
-                    "Info    " => LogType.Info,
-                    "OK      " => LogType.OK,
-                    "Warning " => LogType.Warning,
-                    "Error   " => LogType.Error,
+                    "None" => LogType.None,
+                    "Info" => LogType.Info,
+                    "OK" => LogType.OK,
+                    "Warning" => LogType.Warning,
+                    "Error" => LogType.Error,
                     "Critical" => LogType.Critical,
-                    "Fatal   " => LogType.Fatal,
+                    "Fatal" => LogType.Fatal,
                     _ => LogType.None,
                 };
 
-                return new(0, th, type, p3, p1);
+                return new(0, lineData.Item2, tp, lineData.Item4, lineData.Item1);
             }
             catch (Exception ex)
             {
@@ -232,8 +229,23 @@ namespace Modder
                 return new(-1, "", LogType.None, "", "");
             }
         }
+        private static Tuple<string /*time or "" if line is irregular*/, string /*thread*/, string /*category*/, string /*message*/> CheckLine(string line)
+        {
+            Regex regex = new(@"\[(?<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{3})\] \[(?<thread>\w+)/(?<category>\w+)\s+\] (?<message>.+)");
+            MatchCollection matches = regex.Matches(line);
+
+            foreach (Match match in matches)
+                return new(match.Groups["timestamp"].Value, match.Groups["thread"].Value, match.Groups["category"].Value, match.Groups["message"].Value);
+            return new("", "", "", "");
+        }
         private Tuple<string, string> FormatMessage(LogType type, string message, string time, string thread)
         {
+            // Check if line is irregular (for example an error message)
+            if (time == "")
+            {
+                return new("", message);
+            }
+            
             string p1 = $"[{time}] ";
             string p2 = $"[{thread}/{type,-8}] {message}";
 
@@ -272,17 +284,11 @@ namespace Modder
                 return -1;
             }
         }
-        private void Display()
+        public void Display(string thread, string time, string message, LogType type)
         {
-            Tuple<int, string, LogType, string, string>[] unpacked = LogHandler.UnpackLines(this.ToDisplay.ToString());
+            ObjectDisposedException.ThrowIf(_disposed, this);
 
-            foreach (Tuple<int, string, LogType, string, string> line in unpacked)
-            {
-                if (line.Item1 != 0)
-                    continue;
-
-                Display(line.Item3, line.Item4, line.Item5, line.Item2);
-            }
+            Display(thread, time, message, type);
         }
         private int Display(Tuple<int, string, LogType, string, string>[] lines)
         {
@@ -314,17 +320,11 @@ namespace Modder
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Failed to log.\nMessage: {message}\nError: {ex}", "Log Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Failed to log.\nMessage:{message}\nError: {ex}", "Log Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return -1;
             }
         }
-        public void NewRichTextBox(RichTextBox? logs, string path)
-        {
-            ObjectDisposedException.ThrowIf(_disposed, this);
-
-            this.Logs = logs;
-        }
-        public int New(LogType type, string message, string thread = "Main")
+        public int New(string message, LogType type, string thread = "Main")
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
 
@@ -379,18 +379,6 @@ namespace Modder
         }
         private int UseAppend(string p1, string p2, LogType type)
         {
-            if (!TextBoxReady)
-            {
-                this.ToDisplay.Append(p1);
-                this.ToDisplay.Append(p2);
-                //this.ToDisplay.Append('\n');
-                return 0;
-            }
-
-            int ret;
-            if ((ret = AppendText(p1, Color.DarkGray)) != 0)
-                return ret;
-
             Color color = type switch
             {
                 LogType.None => Color.White,
@@ -402,6 +390,14 @@ namespace Modder
                 LogType.Fatal => Color.Crimson,
                 _ => Color.White,
             };
+
+            // Check if line is irregular
+            if (p1 == "" && p2 != "")
+                return AppendText(p2, color);
+
+            int ret;
+            if ((ret = AppendText(p1, Color.DarkGray)) != 0)
+                return ret;
 
             if ((ret = AppendText(p2, color)) != 0)
                 return ret;

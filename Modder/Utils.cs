@@ -6,11 +6,17 @@ namespace Modder
 {
     public static class Utils
     {
-        public static object? RunFunction(Type mod, string funcName, params object[]? parameters)
+        /// <summary>
+        /// OBSOLETE
+        /// </summary>
+        public static object? _RunFunction(Type mod, string funcName, params object[]? parameters)
         {
             return mod.GetMethod(funcName)?.Invoke(Activator.CreateInstance(mod), parameters);
         }
-        public static object? GetProperty(Type mod, string propName)
+        /// <summary>
+        /// OBSOLETE
+        /// </summary>
+        public static object? _GetProperty(Type mod, string propName)
         {
             return mod.GetProperty(propName)?.GetValue(Activator.CreateInstance(mod));
         }
@@ -118,7 +124,7 @@ namespace Modder
             if (rs == DialogResult.No)
                 Environment.Exit(0);
 
-            Main.Print("Setting up ENV variables", LogType.Info);
+            Loader.Print("Setting up ENV variables", LogType.Info);
             path = @"C:\ProgramData\Modder\";
             Environment.SetEnvironmentVariable("MODDER_PATH", path, EnvironmentVariableTarget.User);
 
@@ -170,8 +176,8 @@ namespace Modder
             }
             catch (Exception ex)
             {
-                Main.Print(ex, LogType.Warning);
-                Main.Print(path, LogType.Warning);
+                Loader.Print(ex, LogType.Warning);
+                Loader.Print(path, LogType.Warning);
                 return null;
             }
         }

@@ -19,9 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "default-black", "default-bl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IDesign", "IDesign\IDesign.csproj", "{16C81659-3846-4E02-88B2-E0033D39B75D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IGameMod", "IMod\IGameMod.csproj", "{8C8F6B2A-EC60-4819-9371-D3985BB80A82}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mod", "Mod\Mod.csproj", "{900F5358-E66B-4325-AC6A-E52053EC40EA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IGameMod", "IGameMod\IGameMod.csproj", "{8C8F6B2A-EC60-4819-9371-D3985BB80A82}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -53,10 +51,6 @@ Global
 		{8C8F6B2A-EC60-4819-9371-D3985BB80A82}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C8F6B2A-EC60-4819-9371-D3985BB80A82}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8C8F6B2A-EC60-4819-9371-D3985BB80A82}.Release|Any CPU.Build.0 = Release|Any CPU
-		{900F5358-E66B-4325-AC6A-E52053EC40EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{900F5358-E66B-4325-AC6A-E52053EC40EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{900F5358-E66B-4325-AC6A-E52053EC40EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{900F5358-E66B-4325-AC6A-E52053EC40EA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

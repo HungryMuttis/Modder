@@ -2,10 +2,13 @@ namespace Modder
 {
     public interface IDesign
     {
-        abstract event EventHandler<string>? AddLog; //should add the line to wherever the form shows the logs
-        abstract event EventHandler<string>? NewLog; //write a new log(fired by the Design)
-                                                    // note: AddLog will be fired after the log is saved to a fil
-        abstract event EventHandler<List<string>>? StartProgram; // when the Design fires this method, the program will be excecuted
-        abstract void Start(List<Mod> mods, Dictionary<string, string> settings); //the function ran to start the form
+        public delegate void LogEvent(string message);
+        public delegate void StartProgramEvent(string[] modNames);
+
+        abstract event IDesign.LogEvent? Log; // (Fired by Design) the Designs way of telling the program to log something
+        abstract event IDesign.StartProgramEvent? StartProgram; // (Fired by Design) when fired, all the given mods will be executed (the program will be started)
+
+        abstract public RichTextBox? GetTextBox();
+        abstract public Form Start(Type[] mods, Dictionary<string, string> settings); //the function ran to start the form
     }
 }
