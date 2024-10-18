@@ -4,24 +4,17 @@ namespace default_black
 {
     public partial class MainForm : Form
     {
-        public event EventHandler<string>? AddLog;
-        public event EventHandler<string>? NewLog;
-        public event EventHandler<List<string>>? StartProgram;
-        List<Mod> Mods { get; set; }
-        Dictionary<string, string> Settings { get; set; }
-        public MainForm(List<Mod> mods, Dictionary<string, string> settings, EventHandler<string>? addLog, EventHandler<string>? newLog, EventHandler<List<string>>? startProgram)
+        public event IDesign.LogEvent? Log;
+        public event IDesign.StartProgramEvent? StartProgram;
+
+        private Type[] Mods { get; set; } = [];
+        private Dictionary<string, string> Settings { get; set; } = [];
+
+        public MainForm(Type[] mods, Dictionary<string, string> settings)
         {
-            this.AddLog = addLog;
-            this.NewLog = newLog;
-            this.StartProgram = startProgram;
-            InitializeComponent();
             this.Mods = mods;
             this.Settings = settings;
-        }
-
-        public RichTextBox GetLogOutput()
-        {
-            return rtbLogs;
+            InitializeComponent();
         }
 
         private void MainForm_ClientSizeChanged(object sender, EventArgs e)
@@ -33,7 +26,7 @@ namespace default_black
             //grbMain
             grbMain.Height = this.Height - 63;
             grbMain.Width = this.Width - 146;
-            pnlMain.Height = grbMain.Height - 14;
+            pnlMain.Height = grbMain.Height - 17;
             pnlMain.Width = grbMain.Width - 2;
         }
 
@@ -45,6 +38,30 @@ namespace default_black
         private void radLogs_CheckedChanged(object sender, EventArgs e)
         {
             grbLogs.Visible = radLogs.Checked;
+        }
+        
+        public RichTextBox GetTextBox()
+        {
+            return this.rtbLogs;
+        }
+    }
+    public class Main : IDesign
+    {
+        private MainForm? mForm;
+        public event IDesign.LogEvent? Log;
+        public event IDesign.StartProgramEvent? StartProgram;
+        public Form Start(Type[] mods, Dictionary<string, string> settings)
+        {
+            new Thread(() => { Application.Run(this.mForm = new(mods, settings)); }).Start();
+
+            while (this.mForm == null)
+                Thread.Sleep(10);
+
+            return this.mForm;
+        }
+        public RichTextBox? GetTextBox()
+        {
+            return this.mForm?.GetTextBox();
         }
     }
 }

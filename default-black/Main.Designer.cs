@@ -148,13 +148,16 @@
             // 
             rtbLogs.BackColor = Color.Black;
             rtbLogs.BorderStyle = BorderStyle.None;
+            rtbLogs.ForeColor = Color.White;
             rtbLogs.Location = new Point(1, 15);
             rtbLogs.Name = "rtbLogs";
+            rtbLogs.ReadOnly = true;
             rtbLogs.Size = new Size(552, 320);
             rtbLogs.TabIndex = 0;
             rtbLogs.Text = "";
+            rtbLogs.WordWrap = false;
             // 
-            // frmMain
+            // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -165,7 +168,7 @@
             Controls.Add(grbWindow);
             ForeColor = Color.White;
             MinimumSize = new Size(230, 160);
-            Name = "frmMain";
+            Name = "MainForm";
             Text = "Modder";
             ClientSizeChanged += MainForm_ClientSizeChanged;
             grbWindow.ResumeLayout(false);
