@@ -6,20 +6,6 @@ namespace Modder
 {
     public static class Utils
     {
-        /// <summary>
-        /// OBSOLETE
-        /// </summary>
-        public static object? _RunFunction(Type mod, string funcName, params object[]? parameters)
-        {
-            return mod.GetMethod(funcName)?.Invoke(Activator.CreateInstance(mod), parameters);
-        }
-        /// <summary>
-        /// OBSOLETE
-        /// </summary>
-        public static object? _GetProperty(Type mod, string propName)
-        {
-            return mod.GetProperty(propName)?.GetValue(Activator.CreateInstance(mod));
-        }
         public static void Error(string message, string caption = "Error")
         {
             MessageBox.Show(message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
