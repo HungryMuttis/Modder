@@ -7,7 +7,7 @@ Modder is a program made to make it easier to mod other programs (made for Modde
 Modder works by loading mods from `Mods/` directory. It doesn't do much by itself, but can do anything with the right mods installed.
 
 ## How to make a mod?
-I suggest you to make mods in `C#` (idk how to do it with other languages if it is possible possible at all).
+I suggest you to make mods in `C#` (idk how to do it with other languages if it is possible at all).
 All of the mods must implement the `IGameMod` interface which is defined in Mod project.
 There are different categories of mods:
 
