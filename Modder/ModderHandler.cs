@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace Modder
+﻿namespace Modder
 {
     internal partial class ModderHandler
     {
@@ -18,7 +16,7 @@ namespace Modder
             this.Ptr = ptr;
             this.LogHandle.New("ModderHandler loaded", LogType.OK);
         }
-        public void Launch(Tuple<Type, string>[] mods, Type designType)
+        public void Launch(Type designType)
         {
             this.LogHandle.New("Launching the Design", LogType.Info);
             Data.ShowWindow(this.Ptr, Data.CMD_HIDE);
@@ -34,7 +32,7 @@ namespace Modder
                         Environment.Exit(0);
                     }
                     this.Design.Log += DesignLog;
-                    this.DesignForm = this.Design.Start(mods, this.Settings);
+                    this.DesignForm = this.Design.Start(this.Settings);
                 }
                 catch (Exception ex)
                 {

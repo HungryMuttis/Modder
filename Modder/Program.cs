@@ -159,11 +159,11 @@ namespace Modder
             Print("Loading design", LogType.Info);
             Type design = this.GetDesign();
             Print("Design loaded", LogType.OK);
-            Print("Loading mods", LogType.Info);
-            Tuple<Type, string>[] mods = this.GetMods();
-            Print("Mods loaded", LogType.OK);
+            //Print("Loading mods", LogType.Info);
+            //Tuple<Type, string>[] mods = this.GetMods();
+            //Print("Mods loaded", LogType.OK);
             Print("Starting the loaded design", LogType.Info);
-            this.ModderHandle.Launch(mods, design);
+            this.ModderHandle.Launch(design);
         }
 
         private Type GetDesign()
@@ -233,6 +233,9 @@ namespace Modder
             return design;
         }
 
+        /// <summary>
+        /// OBSOLETE
+        /// </summary>
         private Tuple<Type, string>[] GetMods()
         {
             List<Tuple<Type?, string>> mods = [];
