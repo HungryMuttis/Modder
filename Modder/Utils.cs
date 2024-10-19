@@ -6,20 +6,6 @@ namespace Modder
 {
     public static class Utils
     {
-        /// <summary>
-        /// OBSOLETE
-        /// </summary>
-        public static object? _RunFunction(Type mod, string funcName, params object[]? parameters)
-        {
-            return mod.GetMethod(funcName)?.Invoke(Activator.CreateInstance(mod), parameters);
-        }
-        /// <summary>
-        /// OBSOLETE
-        /// </summary>
-        public static object? _GetProperty(Type mod, string propName)
-        {
-            return mod.GetProperty(propName)?.GetValue(Activator.CreateInstance(mod));
-        }
         public static void Error(string message, string caption = "Error")
         {
             MessageBox.Show(message, caption, MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -131,40 +117,6 @@ namespace Modder
             return path;
 
         }
-        /*public static Mod? LoadMod(string path)
-        {
-            Assembly loadedAssembly = Assembly.LoadFile(path);
-
-            Type selfIGameMod = typeof(IGameMod);
-            Type? modType = loadedAssembly.GetType("Main.Main");
-
-            if (modType == null)
-                return null;
-
-            if (!Utils.CheckInterface(selfIGameMod, modType))
-                return null;
-
-            Main.Print($"{path} implements {selfIGameMod}");
-
-            return new Mod(modType, path);
-        }
-        public static Design? LoadDesign(string design)
-        {
-            Assembly loadedAssembly = Assembly.LoadFile(design);
-
-            Type selfIDesign = typeof(IDesign);
-            Type? designType = loadedAssembly.GetType("Main.Main");
-
-            if (designType == null)
-                return null;
-
-            if (!Utils.CheckInterface(selfIDesign, designType))
-                return null;
-
-            Main.Print($"{design} implements {selfIDesign}");
-            
-            return new Design(designType);
-        }*/
         public static Type? Load<T>(string path) where T : class
         {
             try
