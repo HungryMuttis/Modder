@@ -9,7 +9,7 @@ namespace Modder
     }
     internal class LogHandler : IDisposable
     {
-        private bool _disposed;
+        private bool IsDisposed;
         private delegate void EmptyEventHandler();
 
         private readonly object Lock = new();
@@ -44,9 +44,9 @@ namespace Modder
 
         public void Dispose()
         {
-            if (!_disposed)
+            if (!IsDisposed)
             {
-                _disposed = true;
+                IsDisposed = true;
                 this.Usable = false;
                 this.Writer.Dispose();
                 this.FS.Dispose();
@@ -63,7 +63,7 @@ namespace Modder
         /// <param name="restoreMethods">Ways the application will try to restore the old logs</param>
         public void NewFolder(string path, string cName = "", bool delete = true, params LogsRestoreMethod[] restoreMethods)
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
+            ObjectDisposedException.ThrowIf(IsDisposed, this);
 
             string[] lines = this.Restore(restoreMethods);
 
@@ -107,7 +107,7 @@ namespace Modder
         /// <param name="logs">RichTextBox that will be used to write logs in</param>
         public void NewRichTextBox(RichTextBox? logs)
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
+            ObjectDisposedException.ThrowIf(IsDisposed, this);
 
             this.TextBoxReady = logs?.IsHandleCreated ?? false;
             this.Logs = logs;
@@ -121,7 +121,7 @@ namespace Modder
         /// <param name="restoreMethods">Ways the application will try to restore the old logs</param>
         public void NewRichTextBox(RichTextBox? logs, params LogsRestoreMethod[] restoreMethods)
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
+            ObjectDisposedException.ThrowIf(IsDisposed, this);
 
             string[] lines = this.Restore(restoreMethods);
 
@@ -305,7 +305,7 @@ namespace Modder
         /// <param name="type">The type of the log</param>
         public void Display(string thread, string time, string message, LogType type)
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
+            ObjectDisposedException.ThrowIf(IsDisposed, this);
 
             Display(thread, time, message, type);
         }
@@ -353,7 +353,7 @@ namespace Modder
         /// <returns></returns>
         public int New(string message, LogType type, string thread = "Main")
         {
-            ObjectDisposedException.ThrowIf(_disposed, this);
+            ObjectDisposedException.ThrowIf(IsDisposed, this);
 
             if (!message.EndsWith('\n'))
                 message += '\n';
