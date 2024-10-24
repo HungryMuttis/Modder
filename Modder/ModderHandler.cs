@@ -8,7 +8,7 @@
         private Dictionary<string, string> Settings { get; set; }
         private Form? DesignForm { get; set; } = null;
         private IDesign? Design { get; set; } = null;
-        private string DesignSettings { get; set; }
+        private string? DesignSettings { get; set; }
 
         public ModderHandler(LogHandler logHandle, Dictionary<string, string> settings, IntPtr ptr)
         {
@@ -33,7 +33,17 @@
                         Environment.Exit(0);
                     }
                     this.Design.Log += DesignLog;
-                    this.DesignForm = this.Design.Start(this.Settings);
+
+                    if (Utils.CheckInvalidChars(this.Design.Name))
+                    {
+                        Print("The Design name has invalid characters", LogType.Fatal);
+                        Utils.Error("The Design name has invalid characters");
+                        Environment.Exit(0);
+                    }
+
+                    this.DesignSettings = Path.Combine(this.Settings["PATH:ModData"], this.Design.Name) + '\\';
+
+                    this.DesignForm = this.Design.Start(this.Settings, this.DesignSettings);
                 }
                 catch (Exception ex)
                 {

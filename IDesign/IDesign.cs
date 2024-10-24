@@ -11,6 +11,6 @@ namespace Modder
         abstract public string Name { get; }
 
         abstract public RichTextBox? GetTextBox();
-        abstract public Form Start(Dictionary<string, string> settings); // The function ran to start the form
+        abstract public Form Start(Dictionary<string, string> settings, string designSettingsPath); // The function ran to start the form
     }
 }
