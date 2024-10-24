@@ -4,14 +4,14 @@ Modder is a program made to make it easier to mod other programs (made for Modde
 
 ## How does it work?
 
-Modder works by loading mods from `Mods/` directory. It doesn't do much by itself, but can do anything with the right mods installed.
+Modder works by loading mods from `Mods\` directory. It doesn't do much by itself, but can do anything with the right mods installed.
 
 ## How to make a mod?
 I suggest you to make mods in `C#` (idk how to do it with other languages if it is possible at all).
 All of the mods must implement the `IGameMod` interface which is defined in Mod project.
 There are different categories of mods:
 
-* `Core render` + only 1 can be mounted at a time (should not include any contend, only the rendering)
+* `Core render` + only 1 can be mounted at a time
 * `Core content` + a mod that adds the core features of a game (can be multiple mounted at once)
 * `Library` - a library that others mods use
 * `Core render mod` - a mod that expands the rendering
@@ -20,4 +20,4 @@ There are different categories of mods:
 All of the descriptions can be found in `Mod/Mod.cs`
 
 When the mod is started the `[NOT IMPLEMENTED]` event is fired.
-Other events do other things (see their respective comment)
+Other events do other things (see their respective comments)
