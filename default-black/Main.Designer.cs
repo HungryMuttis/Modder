@@ -42,27 +42,31 @@
             radLogs = new RadioButton();
             radMain = new RadioButton();
             radSettings = new RadioButton();
-            button1 = new Button();
+            btnStartApp = new Button();
             grbMain = new GroupBox();
             pnlMain = new Panel();
+            btnReadCustom = new Button();
+            btnReadPaths = new Button();
             grbUnloaded = new GroupBox();
             dgvUnloaded = new DataGridView();
-            Path = new DataGridViewTextBoxColumn();
-            LoadType = new DataGridViewButtonColumn();
+            dgvcUPath = new DataGridViewTextBoxColumn();
+            dgvcUMR = new DataGridViewButtonColumn();
             grbLoaded = new GroupBox();
             dgvLoaded = new DataGridView();
-            dataGridViewButtonColumn1 = new DataGridViewButtonColumn();
-            dataGridViewTextBoxColumn1 = new DataGridViewTextBoxColumn();
+            dgvcLML = new DataGridViewButtonColumn();
+            dgvcLName = new DataGridViewTextBoxColumn();
+            dgvcLMR = new DataGridViewButtonColumn();
             grbApp = new GroupBox();
             dgvLoad = new DataGridView();
-            MoveToUnloaded = new DataGridViewButtonColumn();
-            CName = new DataGridViewTextBoxColumn();
-            MoveDown = new DataGridViewButtonColumn();
-            MoveUp = new DataGridViewButtonColumn();
+            dgvcAML = new DataGridViewButtonColumn();
+            dgvcACName = new DataGridViewTextBoxColumn();
+            dgvcAMD = new DataGridViewButtonColumn();
+            dgvcAMU = new DataGridViewButtonColumn();
             grbLogs = new GroupBox();
             rtbLogs = new RichTextBox();
             grbSettings = new GroupBox();
             pnlSettings = new Panel();
+            btnReadThis = new Button();
             grbWindow.SuspendLayout();
             pnlWindow.SuspendLayout();
             grbMain.SuspendLayout();
@@ -135,16 +139,16 @@
             radSettings.UseVisualStyleBackColor = true;
             radSettings.CheckedChanged += radSettings_CheckedChanged;
             // 
-            // button1
+            // btnStartApp
             // 
-            button1.FlatStyle = FlatStyle.Flat;
-            button1.ForeColor = Color.White;
-            button1.Location = new Point(5, 292);
-            button1.Name = "button1";
-            button1.Size = new Size(77, 23);
-            button1.TabIndex = 1;
-            button1.Text = "Launch";
-            button1.UseVisualStyleBackColor = true;
+            btnStartApp.FlatStyle = FlatStyle.Flat;
+            btnStartApp.ForeColor = Color.White;
+            btnStartApp.Location = new Point(5, 291);
+            btnStartApp.Name = "btnStartApp";
+            btnStartApp.Size = new Size(119, 24);
+            btnStartApp.TabIndex = 1;
+            btnStartApp.Text = "Launch";
+            btnStartApp.UseVisualStyleBackColor = true;
             // 
             // grbMain
             // 
@@ -160,22 +164,49 @@
             // pnlMain
             // 
             pnlMain.AutoScroll = true;
+            pnlMain.Controls.Add(btnReadThis);
+            pnlMain.Controls.Add(btnReadCustom);
+            pnlMain.Controls.Add(btnReadPaths);
             pnlMain.Controls.Add(grbUnloaded);
             pnlMain.Controls.Add(grbLoaded);
             pnlMain.Controls.Add(grbApp);
-            pnlMain.Controls.Add(button1);
+            pnlMain.Controls.Add(btnStartApp);
             pnlMain.Location = new Point(1, 15);
             pnlMain.Name = "pnlMain";
             pnlMain.Size = new Size(552, 320);
             pnlMain.TabIndex = 2;
             // 
+            // btnReadCustom
+            // 
+            btnReadCustom.FlatStyle = FlatStyle.Flat;
+            btnReadCustom.Font = new Font("Segoe UI", 9F);
+            btnReadCustom.ForeColor = Color.White;
+            btnReadCustom.Location = new Point(5, 71);
+            btnReadCustom.Name = "btnReadCustom";
+            btnReadCustom.Size = new Size(119, 24);
+            btnReadCustom.TabIndex = 8;
+            btnReadCustom.Text = "Read custom path";
+            btnReadCustom.UseVisualStyleBackColor = true;
+            // 
+            // btnReadPaths
+            // 
+            btnReadPaths.FlatStyle = FlatStyle.Flat;
+            btnReadPaths.ForeColor = Color.White;
+            btnReadPaths.Location = new Point(5, 11);
+            btnReadPaths.Name = "btnReadPaths";
+            btnReadPaths.Size = new Size(119, 24);
+            btnReadPaths.TabIndex = 7;
+            btnReadPaths.Text = "Read paths";
+            btnReadPaths.UseVisualStyleBackColor = true;
+            btnReadPaths.Click += btnReadPaths_Click;
+            // 
             // grbUnloaded
             // 
             grbUnloaded.Controls.Add(dgvUnloaded);
             grbUnloaded.ForeColor = Color.White;
-            grbUnloaded.Location = new Point(85, 3);
+            grbUnloaded.Location = new Point(130, 3);
             grbUnloaded.Name = "grbUnloaded";
-            grbUnloaded.Size = new Size(151, 313);
+            grbUnloaded.Size = new Size(136, 313);
             grbUnloaded.TabIndex = 6;
             grbUnloaded.TabStop = false;
             grbUnloaded.Text = "Unloaded";
@@ -197,7 +228,7 @@
             dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
             dgvUnloaded.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             dgvUnloaded.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvUnloaded.Columns.AddRange(new DataGridViewColumn[] { Path, LoadType });
+            dgvUnloaded.Columns.AddRange(new DataGridViewColumn[] { dgvcUPath, dgvcUMR });
             dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = Color.Black;
             dataGridViewCellStyle2.Font = new Font("Segoe UI", 9F);
@@ -223,35 +254,34 @@
             dgvUnloaded.RowHeadersDefaultCellStyle = dataGridViewCellStyle3;
             dgvUnloaded.RowHeadersVisible = false;
             dgvUnloaded.ShowEditingIcon = false;
-            dgvUnloaded.Size = new Size(149, 296);
+            dgvUnloaded.Size = new Size(134, 296);
             dgvUnloaded.TabIndex = 3;
             dgvUnloaded.RowsAdded += dgvUnloaded_RowsAdded;
             dgvUnloaded.RowsRemoved += dgvUnloaded_RowsRemoved;
             // 
-            // Path
+            // dgvcUPath
             // 
-            Path.AutoSizeMode = DataGridViewAutoSizeColumnMode.DisplayedCells;
-            Path.HeaderText = "Path";
-            Path.Name = "Path";
-            Path.ReadOnly = true;
-            Path.Resizable = DataGridViewTriState.False;
-            Path.Width = 55;
+            dgvcUPath.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            dgvcUPath.HeaderText = "Path";
+            dgvcUPath.Name = "dgvcUPath";
+            dgvcUPath.ReadOnly = true;
+            dgvcUPath.Resizable = DataGridViewTriState.False;
             // 
-            // Load
+            // dgvcUMR
             // 
-            LoadType.HeaderText = "🡢";
-            LoadType.Name = "Load";
-            LoadType.ReadOnly = true;
-            LoadType.Resizable = DataGridViewTriState.False;
-            LoadType.Width = 25;
+            dgvcUMR.HeaderText = "🡢";
+            dgvcUMR.Name = "dgvcUMR";
+            dgvcUMR.ReadOnly = true;
+            dgvcUMR.Resizable = DataGridViewTriState.False;
+            dgvcUMR.Width = 25;
             // 
             // grbLoaded
             // 
             grbLoaded.Controls.Add(dgvLoaded);
             grbLoaded.ForeColor = Color.White;
-            grbLoaded.Location = new Point(241, 3);
+            grbLoaded.Location = new Point(271, 3);
             grbLoaded.Name = "grbLoaded";
-            grbLoaded.Size = new Size(151, 313);
+            grbLoaded.Size = new Size(136, 313);
             grbLoaded.TabIndex = 5;
             grbLoaded.TabStop = false;
             grbLoaded.Text = "Loaded";
@@ -273,7 +303,7 @@
             dataGridViewCellStyle4.WrapMode = DataGridViewTriState.True;
             dgvLoaded.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle4;
             dgvLoaded.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvLoaded.Columns.AddRange(new DataGridViewColumn[] { dataGridViewButtonColumn1, dataGridViewTextBoxColumn1 });
+            dgvLoaded.Columns.AddRange(new DataGridViewColumn[] { dgvcLML, dgvcLName, dgvcLMR });
             dataGridViewCellStyle5.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle5.BackColor = Color.Black;
             dataGridViewCellStyle5.Font = new Font("Segoe UI", 9F);
@@ -299,32 +329,40 @@
             dgvLoaded.RowHeadersDefaultCellStyle = dataGridViewCellStyle6;
             dgvLoaded.RowHeadersVisible = false;
             dgvLoaded.ShowEditingIcon = false;
-            dgvLoaded.Size = new Size(149, 296);
+            dgvLoaded.Size = new Size(134, 296);
             dgvLoaded.TabIndex = 3;
             // 
-            // dataGridViewButtonColumn1
+            // dgvcLML
             // 
-            dataGridViewButtonColumn1.Frozen = true;
-            dataGridViewButtonColumn1.HeaderText = "🡠";
-            dataGridViewButtonColumn1.Name = "dataGridViewButtonColumn1";
-            dataGridViewButtonColumn1.ReadOnly = true;
-            dataGridViewButtonColumn1.Resizable = DataGridViewTriState.False;
-            dataGridViewButtonColumn1.Text = "";
-            dataGridViewButtonColumn1.Width = 25;
+            dgvcLML.HeaderText = "🡠";
+            dgvcLML.Name = "dgvcLML";
+            dgvcLML.ReadOnly = true;
+            dgvcLML.Resizable = DataGridViewTriState.False;
+            dgvcLML.Text = "";
+            dgvcLML.Width = 25;
             // 
-            // dataGridViewTextBoxColumn1
+            // dgvcLName
             // 
-            dataGridViewTextBoxColumn1.HeaderText = "Name";
-            dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
-            dataGridViewTextBoxColumn1.ReadOnly = true;
+            dgvcLName.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            dgvcLName.HeaderText = "Name";
+            dgvcLName.Name = "dgvcLName";
+            dgvcLName.ReadOnly = true;
+            // 
+            // dgvcLMR
+            // 
+            dgvcLMR.HeaderText = "🡢";
+            dgvcLMR.Name = "dgvcLMR";
+            dgvcLMR.ReadOnly = true;
+            dgvcLMR.Resizable = DataGridViewTriState.False;
+            dgvcLMR.Width = 25;
             // 
             // grbApp
             // 
             grbApp.Controls.Add(dgvLoad);
             grbApp.ForeColor = Color.White;
-            grbApp.Location = new Point(397, 3);
+            grbApp.Location = new Point(412, 3);
             grbApp.Name = "grbApp";
-            grbApp.Size = new Size(151, 313);
+            grbApp.Size = new Size(136, 313);
             grbApp.TabIndex = 4;
             grbApp.TabStop = false;
             grbApp.Text = "Application";
@@ -346,7 +384,7 @@
             dataGridViewCellStyle7.WrapMode = DataGridViewTriState.True;
             dgvLoad.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
             dgvLoad.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvLoad.Columns.AddRange(new DataGridViewColumn[] { MoveToUnloaded, CName, MoveDown, MoveUp });
+            dgvLoad.Columns.AddRange(new DataGridViewColumn[] { dgvcAML, dgvcACName, dgvcAMD, dgvcAMU });
             dataGridViewCellStyle8.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle8.BackColor = Color.Black;
             dataGridViewCellStyle8.Font = new Font("Segoe UI", 9F);
@@ -372,42 +410,42 @@
             dgvLoad.RowHeadersDefaultCellStyle = dataGridViewCellStyle9;
             dgvLoad.RowHeadersVisible = false;
             dgvLoad.ShowEditingIcon = false;
-            dgvLoad.Size = new Size(149, 296);
+            dgvLoad.Size = new Size(134, 296);
             dgvLoad.TabIndex = 3;
             // 
-            // MoveToUnloaded
+            // dgvcAML
             // 
-            MoveToUnloaded.Frozen = true;
-            MoveToUnloaded.HeaderText = "🡠";
-            MoveToUnloaded.Name = "MoveToUnloaded";
-            MoveToUnloaded.ReadOnly = true;
-            MoveToUnloaded.Resizable = DataGridViewTriState.False;
-            MoveToUnloaded.Text = "";
-            MoveToUnloaded.Width = 25;
+            dgvcAML.HeaderText = "🡠";
+            dgvcAML.Name = "dgvcAML";
+            dgvcAML.ReadOnly = true;
+            dgvcAML.Resizable = DataGridViewTriState.False;
+            dgvcAML.Text = "";
+            dgvcAML.Width = 25;
             // 
-            // CName
+            // dgvcACName
             // 
-            CName.HeaderText = "Name";
-            CName.Name = "CName";
-            CName.ReadOnly = true;
+            dgvcACName.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            dgvcACName.HeaderText = "Name";
+            dgvcACName.Name = "dgvcACName";
+            dgvcACName.ReadOnly = true;
             // 
-            // MoveDown
+            // dgvcAMD
             // 
-            MoveDown.HeaderText = "🡣";
-            MoveDown.Name = "MoveDown";
-            MoveDown.ReadOnly = true;
-            MoveDown.Resizable = DataGridViewTriState.False;
-            MoveDown.SortMode = DataGridViewColumnSortMode.Automatic;
-            MoveDown.Width = 25;
+            dgvcAMD.HeaderText = "🡣";
+            dgvcAMD.Name = "dgvcAMD";
+            dgvcAMD.ReadOnly = true;
+            dgvcAMD.Resizable = DataGridViewTriState.False;
+            dgvcAMD.SortMode = DataGridViewColumnSortMode.Automatic;
+            dgvcAMD.Width = 25;
             // 
-            // MoveUp
+            // dgvcAMU
             // 
-            MoveUp.HeaderText = "🡡";
-            MoveUp.Name = "MoveUp";
-            MoveUp.ReadOnly = true;
-            MoveUp.Resizable = DataGridViewTriState.False;
-            MoveUp.SortMode = DataGridViewColumnSortMode.Automatic;
-            MoveUp.Width = 25;
+            dgvcAMU.HeaderText = "🡡";
+            dgvcAMU.Name = "dgvcAMU";
+            dgvcAMU.ReadOnly = true;
+            dgvcAMU.Resizable = DataGridViewTriState.False;
+            dgvcAMU.SortMode = DataGridViewColumnSortMode.Automatic;
+            dgvcAMU.Width = 25;
             // 
             // grbLogs
             // 
@@ -452,6 +490,18 @@
             pnlSettings.Size = new Size(552, 320);
             pnlSettings.TabIndex = 2;
             // 
+            // btnReadThis
+            // 
+            btnReadThis.FlatStyle = FlatStyle.Flat;
+            btnReadThis.Font = new Font("Segoe UI", 9F);
+            btnReadThis.ForeColor = Color.White;
+            btnReadThis.Location = new Point(5, 41);
+            btnReadThis.Name = "btnReadThis";
+            btnReadThis.Size = new Size(119, 24);
+            btnReadThis.TabIndex = 9;
+            btnReadThis.Text = "Read custom path";
+            btnReadThis.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -466,7 +516,7 @@
             MinimumSize = new Size(230, 160);
             Name = "MainForm";
             Text = "Modder";
-            Load += this.MainForm_Load;
+            Load += MainForm_Load;
             ClientSizeChanged += MainForm_ClientSizeChanged;
             grbWindow.ResumeLayout(false);
             pnlWindow.ResumeLayout(false);
@@ -491,7 +541,7 @@
         private RadioButton radMain;
         private RadioButton radLogs;
         private RadioButton radSettings;
-        private Button button1;
+        private Button btnStartApp;
         private GroupBox grbMain;
         private Panel pnlMain;
         private GroupBox grbLogs;
@@ -504,13 +554,17 @@
         private DataGridView dgvUnloaded;
         private GroupBox grbLoaded;
         private DataGridView dgvLoaded;
-        private DataGridViewButtonColumn dataGridViewButtonColumn1;
-        private DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
-        private DataGridViewTextBoxColumn Path;
-        private DataGridViewButtonColumn LoadType;
-        private DataGridViewButtonColumn MoveToUnloaded;
-        private DataGridViewTextBoxColumn CName;
-        private DataGridViewButtonColumn MoveDown;
-        private DataGridViewButtonColumn MoveUp;
+        private DataGridViewTextBoxColumn dgvcUPath;
+        private DataGridViewButtonColumn dgvcUMR;
+        private DataGridViewButtonColumn dgvcLML;
+        private DataGridViewTextBoxColumn dgvcLName;
+        private DataGridViewButtonColumn dgvcLMR;
+        private DataGridViewButtonColumn dgvcAML;
+        private DataGridViewTextBoxColumn dgvcACName;
+        private DataGridViewButtonColumn dgvcAMD;
+        private DataGridViewButtonColumn dgvcAMU;
+        private Button btnReadPaths;
+        private Button btnReadCustom;
+        private Button btnReadThis;
     }
 }

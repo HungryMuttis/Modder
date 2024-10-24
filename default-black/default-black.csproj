@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\IDesign\IDesign.csproj" />
+    <ProjectReference Include="..\ModHandler\ModHandler.csproj" />
   </ItemGroup>
 
 </Project>
