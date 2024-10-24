@@ -8,6 +8,7 @@
         private Dictionary<string, string> Settings { get; set; }
         private Form? DesignForm { get; set; } = null;
         private IDesign? Design { get; set; } = null;
+        private string DesignSettings { get; set; }
 
         public ModderHandler(LogHandler logHandle, Dictionary<string, string> settings, IntPtr ptr)
         {
