@@ -194,6 +194,28 @@ namespace Modder
                 this.LoadedMods.Add(new(loadedMod, modType.Item2));
         }
         /// <summary>
+        /// Loads the mod type associated with the given index
+        /// </summary>
+        /// <param name="index">The index of the mod you want to load</param>
+        /// <exception cref="ObjectDisposedException">Thrown if this object is disposed</exception>
+        /// <exception cref="IndexOutOfRangeException">Thrown if the given index is more than or equal to the count of the saved mod Types</exception>
+        public bool LoadModType(int index)
+        {
+            ObjectDisposedException.ThrowIf(IsDisposed, this);
+
+            if (this.ModTypes.Count < index)
+                throw new IndexOutOfRangeException("index has to be less than the number of saved mod Types");
+
+            IGameMod? loaded = LoadModType(this.ModTypes[index].Item1);
+            if (loaded != null)
+                this.LoadedMods.Add(new(loaded, this.ModTypes[index].Item2));
+            else
+                return false;
+            this.ModTypes.RemoveAt(index);
+            return true;
+        }
+
+        /// <summary>
         /// Clears all stored mod Types
         /// </summary>
         /// <exception cref="ObjectDisposedException">Thrown if this object is disposed</exception>
@@ -212,11 +234,6 @@ namespace Modder
             ObjectDisposedException.ThrowIf(IsDisposed, this);
 
             this.LoadedMods.Clear();
-        }
-
-        public void AddLoadedMod(IGameMod loadedMod)
-        {
-            this.LoadedMods.Add(new(loadedMod, ""));
         }
 
         private static List<Tuple<IGameMod, string>> LoadModTypes(IEnumerable<Tuple<Type, string>> modTypes)
@@ -269,7 +286,14 @@ namespace Modder
 
             return true;
         }
-        private static bool CheckPath(string path, bool error = true)
+        /// <summary>
+        /// Checks if the given path is valid
+        /// </summary>
+        /// <param name="path">The path that will be checked</param>
+        /// <param name="error">Weather to throw an error if the path is invalid or just return false</param>
+        /// <returns>Returns true if the path is valid otherwise throws an error if 'error' is true or returns false</returns>
+        /// <exception cref="InvalidPathException">Thrown if the path is invalid and 'error' is set to true</exception>
+        public static bool CheckPath(string path, bool error = true)
         {
             if (!Path.IsPathRooted(path))
             {
