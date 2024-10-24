@@ -8,8 +8,8 @@ namespace Main
     public class Main : IGameMod
     {
         public Int16 Type { get { return 0; } } // This is a mod that adds the rendering
-        public string RealName { get { return "Test"; } } // The real name of the mod
-        public string Name { get { return "Test Game"; } } // The name of the mod(it will be used as the name of the application)
+        public string Name { get { return "Test"; } } // The real name of the mod
+        public string DisplayName { get { return "Test Game"; } } // The name of the mod(it will be used as the name of the application)
         public string Description { get { return "This is a test game"; } } // The description of the mod
         public string Version { get { return "1.0.0"; } } // The version of the mod
         public string Patch { get { return ""; } } // No patch for this version
