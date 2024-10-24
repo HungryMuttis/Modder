@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.IO;
+using System.Reflection;
 using System.Text;
 using System.Xml;
 
@@ -75,6 +76,10 @@ namespace Modder
             }
 
             return newValue.ToString();
+        }
+        public static bool CheckInvalidChars(string str)
+        {
+            return str.Any(c => Path.GetInvalidPathChars().Contains(c));
         }
         public static bool CheckXml(XmlNode defDoc, XmlNode doc)
         {
